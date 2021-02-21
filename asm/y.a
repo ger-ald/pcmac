@@ -1,0 +1,27 @@
+; ----------------------------------------------
+;
+;			y.a
+;
+const	_SFR	:= (P0,TCON,P1,SCON,P2,IE,P3,IP,X1,T2CON,PSW,X2,ACC,X3,B,X4)
+const	_BIT	:= (0, 1, 2, 3, 4, 5, 6, 7)
+
+macro("anl\ C,*.*", _SFR, _BIT)	; anl C,bit
+	db	82h
+	db	80h + (#0 << 3) + #1
+endm
+
+macro("anl\ C,*", NUMERIC)	; anl C,bit
+	db	82h
+	db	#0
+endm
+
+macro("anl\ C, / *.*", _SFR, _BIT)	; anl C,/bit
+	db	0b0h
+	db	80h + (#0 << 3) + #1
+endm
+
+macro("anl\ C, / *", NUMERIC)	; anl C,/bit
+	db	0b0h
+	db	#0
+endm
+

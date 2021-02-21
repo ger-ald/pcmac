@@ -1,0 +1,64 @@
+
+                  I N T E R O F F I C E   M E M O R A N D U M
+
+                                        Date:     14-Apr-1993 13:02 CET
+                                        From:     
+                                                  Bob.Mastors@Central.Sun.COM@umc@WRLMTS@WRL
+                                        Dept:      
+                                        Tel No:    
+
+TO:  verhas@a1.bpsof.bps.MTS@umc@WRLMTS@WRL
+
+
+Subject: RE: pcmac
+
+Peter,
+
+Here is an example of the problem I am having with pcmac.
+
+Put the following macros in a file called "y.a".
+; ----------------------------------------------
+;
+;			y.a
+;
+const	_SFR	:= (P0,TCON,P1,SCON,P2,IE,P3,IP,X1,T2CON,PSW,X2,ACC,X3,B,X4)
+const	_BIT	:= (0, 1, 2, 3, 4, 5, 6, 7)
+
+macro("anl\ C,*.*", _SFR, _BIT)	; anl C,bit
+	db	82h
+	db	80h + (#0 << 3) + #1
+endm
+
+macro("anl\ C,*", NUMERIC)	; anl C,bit
+	db	82h
+	db	#0
+endm
+
+macro("anl\ C, / *.*", _SFR, _BIT)	; anl C,/bit
+	db	0b0h
+	db	80h + (#0 << 3) + #1
+endm
+
+macro("anl\ C, / *", NUMERIC)	; anl C,/bit
+	db	0b0h
+	db	#0
+endm
+
+Put the following instructions in a file called "x.a"
+#lib "y.lib"
+;#include "y.a"
+
+	anl C,7fh
+	anl	C,P1.3
+	anl	C,/70h
+	anl	C,/P1.3
+
+Now compile the macros to a .lib file using the -K switch.
+Then try to compile the file x.a.
+This gives me errors.
+However if you change x.a to #include "y.a" instead of #lib "y.lib",
+it will work.
+
+Thanks for any help you can provide.
+Bob
+

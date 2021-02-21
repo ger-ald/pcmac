@@ -1,0 +1,194 @@
+;*******************************************************
+;*                                                     *
+;*             Z80-EXTENDED DEFINITION                 *
+;*             =======================                 *
+;*                                                     *
+;* Structured assembly language                        *
+;*                                                     *
+;* Usage: #lib <ez80.lib>                              *
+;*        #macros <ez80.h>                             *
+;*                                                     *
+;* Defined: Peter Verhas                               *
+;*                                                     *
+;*                                                     *
+;*******************************************************
+#macros <z80.mac>
+
+;
+;Constants that are needed
+;
+
+;The inverse of the _SCE symbolic constants
+const _ISCE := (NZ,Z,NC,C,PO,PE,P,M)
+;
+; WHILE loop
+;
+
+macro("WHILE *",_ISCE)
+#push _loopstack , $
+	DB 0c2h+(#0<<3) ;code of the conditional jump
+$	:=	$+2			;Space for the address bytes
+endm
+
+macro("WEND")
+	DB	0c3h			  ;jump
+	DW	tos( _loopstack ) ; address
+_pcounter := $			  ;save the current prog counter
+$	:=	pop( _loopstack )+1
+	DW	_pcounter         ;set the address bytes of the while
+$	:=	_pcounter
+endm
+
+macro("REPEAT")
+
+#push _loopstack, $
+
+endm
+
+macro("UNTIL *",_ISCE)
+	DB	0c2h+(#0<<3)
+	DW	pop(_loopstack)
+endm
+
+macro("UNTIL A == *",_SS)
+	DB	184 + #0
+	DB	0c2h
+	DW	pop(_loopstack)
+endm
+
+macro("UNTIL A != *",_SS)
+	DB	184 + #0
+	DB	0cah
+	DW	pop(_loopstack)
+endm
+
+macro("UNTIL A == *",NUMERIC)
+	cp	#0
+	DB	0c2h
+	DW	pop(_loopstack)
+endm
+
+macro("UNTIL A != *",NUMERIC)
+	cp	#0
+	DB	0cah
+	DW	pop(_loopstack)
+endm
+
+macro("IF *",_ISCE)
+
+	DB	0c2h+(#0<<3)
+#push	_loopstack , $
+$	:=	$+2
+endm
+
+macro("IF A == *",_SS)
+	DB	184 + #0
+	DB	0cah
+#push	_loopstack , $
+$	:=	$+2
+endm
+
+macro("IF A != *",_SS)
+	DB	184 + #0
+	DB	0c2h
+#push	_loopstack , $
+$	:=	$+2
+endm
+
+macro("IF A == *",NUMERIC)
+	cp	#0
+	DB	0cah
+#push	_loopstack , $
+$	:=	$+2
+endm
+
+macro("IF A != *",NUMERIC)
+	cp	#0
+	DB	0c2h
+#push	_loopstack , $
+$	:=	$+2
+endm
+
+macro("ELSE")
+	DB	0c3h
+_pcounter := $+2
+$	:=	pop( _loopstack )
+	DW	_pcounter
+$	:=	_pcounter
+#push	_loopstack , $-2
+endm
+
+macro("ENDIF")
+_pcounter := $
+$	:=	pop(_loopstack)
+	DW	_pcounter
+$	:=	_pcounter
+endm
+
+macro("LD * , ( HL ++ )",_SS)
+	DB	46h+(#0<<3)
+	INC HL
+endm
+
+macro("LD * , ( ++ HL )",_SS)
+	INC HL
+	DB	46h+(#0<<3)
+endm
+
+macro("LD * , ( HL -- )",_SS)
+	DB	46h+(#0<<3)
+	DEC HL
+endm
+
+macro("LD * , ( -- HL )",_SS)
+	DEC HL
+	DB	46h+(#0<<3)
+endm
+
+macro("LD A , ( * ++ )",_SDB)
+	DB	0ah+(#0<<4)
+	DB	3+(#0<<4)
+endm
+
+macro("LD A , ( ++ * )",_SDB)
+	DB	3+(#0<<4)
+	DB	0ah+(#0<<4)
+endm
+
+macro("LD A , ( * -- )",_SDB)
+	DB	0ah+(#0<<4)
+	DB	0ch+(#0<<4)
+endm
+
+macro("LD A , ( -- * )",_SDB)
+	DB	0ch+(#0<<4)
+	DB	0ah+(#0<<4)
+endm
+
+const _PRO:=(PROCEDURE,FUNCTION)
+macro("* *",_PRO,LABEL)
+#1		jp	_pstart@
+endm
+macro("BEGIN")
+_pstart@
+endm
+macro("END")
+	ret
+endm
+macro("VARIABLE * : ARRAY [*] OF INTEGER",LABEL,NUMERIC)
+#0		
+$	:=	$	+	2*#1
+endm
+
+macro("VARIABLE * : ARRAY [*] OF CHAR",LABEL,NUMERIC)
+#0		
+$	:=	$	+	#1
+endm
+
+macro("VARIABLE * : CHAR",LABEL)
+#0	DB	0
+endm
+
+macro("VARIABLE * : INTEGER",LABEL)
+#0	DW	0
+endm
