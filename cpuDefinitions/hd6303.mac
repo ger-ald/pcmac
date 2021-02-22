@@ -1,0 +1,864 @@
+;*******************************************************
+;*                                                     *
+;*           ============================              *
+;*             HD6303X MACRO DEFINITIONS               *
+;*           ============================              *
+;*             for use with the Versoft                *
+;*              PCMAC Macro Assembler                  *
+;*           ============================              *
+;*                                                     *
+;*******************************************************
+;*
+;*  $Revision: 1.38 $ by Brian Smith
+;*
+;*  $Date: 1998/06/08 13:21:27 $
+;*
+;*  If you make any improvements or corrections to this
+;*  set of PCMAC macros, please send me a copy.
+;*
+;*  My email address is:
+;*
+;*              bds@sugelan.co.uk
+;*
+;***************************************************************************
+; (based on motorola 6800)
+; This file contains only those macros required to support the Hitachi
+; HD6303 Processor.  With the sole exception of the TRAP macro, there
+; are no macros here which are specific to the Psion Organiser II.
+;
+; See the file SERVICES.MAC for the macros and associated constants used
+; to interface with the Psion Organiser II Operating System Services.
+;
+;***************************************************************************
+;
+; UPPERCASE / LOWERCASE
+; ---------------------
+; Note that although these macros all use uppercase to define the HD6303
+; instruction set, the instructions and pseudo ops in the source files to
+; be assembled (i.e. the ASM source files) can be in either uppercase or
+; lowercase. For example, "ASL A" and "asl a" are equivalent, as are
+; "REPT 255 X 3 TIMES" and "rept 255 x 3 times".
+;
+;***************************************************************************
+;
+; PSEUDO OPS
+; ----------
+; In addition to defining the HD6303 Instruction Set, this file defines the
+; following pseudo ops or directives:
+;
+; ORG   - defines the start address (origin) for a machine code program block
+;         (e.g. "ORG 7000h" sets the start address to hexadecimal 7000)
+;
+; DSZ   - defines one or more bytes, all preset to zero
+;         (e.g. "DSZ 10" generates a block of 10 bytes, each set to zero)
+;
+; REPT  - defines one or more bytes, all preset to the same user-supplied value
+;         (e.g. "REPT 255 x 3 times" generates 3 bytes, each set to 255)
+;
+; LBC   - defines leading byte-count strings, i.e. first byte holds the length
+;         (e.g. LBC "Hello" generates the six hex bytes "05 48 65 6C 6C 6F")
+;
+;***************************************************************************
+;
+; RELATIVE BRANCH INSTRUCTIONS
+; ----------------------------
+; By default this set of macros supports relative branch instructions using
+; labels (e.g. BCS ERROR), signed numeric offsets (e.g. BNE -9 and BEQ +100)
+; and unsigned positive numeric offsets (e.g. BCC 127).
+;
+; However, it is possible to restrict relative branch instructions to use
+; only labels and signed numeric offsets by defining the variable SIGNEDONLY
+; in each ASM source file as required, or in the HITACHI.MAC file in order to
+; affect every ASM source file.
+
+; If required, relative branch instructions can even be restricted to use
+; only labels by defining the variable LABELSONLY in each ASM source file as
+; required, or in the HITACHI.MAC file in order to affect every ASM file.
+;
+;***************************************************************************
+;
+; IMPORTANT:    If a FORWARD reference is encountered in an instruction
+;               which can use either an 8-bit direct address or a 16-bit
+;               extended address (i.e. either an "M" or "MM" address),
+;               then this set of macros always assumes the worst case and
+;               allocates two bytes for storage (i.e. it assumes an "MM"
+;               address is to be used)
+;
+; EXAMPLE:      The following code fragment shows the effect of a FORWARD
+;               reference on an instruction which has "M" and "MM" forms:
+;
+;                 HIT    EQU   41h   ; Address of HIT data store
+;
+;    97 41        BLK_1  STA A HIT   ; Uses 2-byte instruction to store Acc A
+;    B7 00 42            STA A MISS  ; Uses 3-byte instruction to store Acc A
+;                                    ; because MISS is a forward reference
+;
+;                 MISS   EQU   42h   ; Address of MISS data store
+;
+;    97 41        BLK_2  STA A HIT   ; Generates same code as in BLK_1 above
+;    97 42               STA A MISS  ; MISS is not a FORWARD reference here,
+;                                    ; so a 2-byte instruction is generated
+;
+;***************************************************************************
+;
+; The HD6303 stores 16-bit values in HI-LO order
+; (e.g. JSR 1234h stored as BDh, 12h, 34h)
+;
+#dw hl
+
+;
+; Register constants
+;
+const	_SS	:=	(A,B)
+
+;
+; Load byte, add, subtract, and, or, compare group
+;
+const	_SADD	:=	(SUB,CMP,SBC,__G1__,AND,BIT,LDA,__G2__,EOR,ADC,ORA,ADD)
+
+;
+; Conditional branching (relative addressing)
+;
+const	_SCB	:=	(BRA,BRN,BHI,BLS,BCC,BCS,BNE,BEQ,BVC,BVS,BPL,BMI,BGE,BLT,BGT,BLE,BSR)
+const   _SIGN   :=      (+,-)
+;
+; Byte clear, complement, decrement, increment shift, rotate and test
+;
+const   _SB8    :=      (NEG,__G3__,__G4__,COM,LSR,__G5__,ROR,ASR,ASL,ROL,DEC,__G6__,INC,TST,__G7__,CLR)
+
+;
+; Bit number constants
+;
+const	_SBIT	:=	(0,1,2,3,4,5,6,7)
+
+;
+; Bit manipulation constants
+;
+const	_SBM	:=	(BTST,BTGL,BSET,BCLR)
+
+;
+; One-byte instruction groups
+;
+const	_S1B1	:=	(LSRD,ASLD,TAP,TPA,INX,DEX,CLV,SEV,CLC,SEC,CLI,SEI,SBA,CBA)
+const	_S1B2	:=	(TAB,TBA,XGDX,DAA,SLP,ABA)
+const   _S1B3   :=      (TSX,INS,__G8__,__G9__,DES,TXS,__GA__,__GB__,PULX,RTS,ABX,RTI,PSHX,MUL)
+
+;
+; Immediate data instructions
+;
+const	_SIM1	:=	(TIM,EIM,OIM,AIM)
+const	_SIM2	:=	(SUB,ADD)
+const	_SIM3	:=	(LDS,LDX)
+const	_SIM4	:=	(CPX,LDD)
+
+;
+; Immediate Data Prefix
+;
+const   _SIMM   :=      (#,%)
+
+;
+; 16-bit operations
+;
+const	_S2B	:=	(STS,STX)
+
+;
+; 8-bit Stack operations
+;
+const   _STK8   :=      (PUL,PSH)
+
+;
+; 8-bit Store operations
+;
+const   _STA    :=      (STA)
+
+;***************************************************************************
+;
+; Pseudo op macro definitions
+;
+;***************************************************************************
+
+;------------------------------------------------------------
+; Set program ORIGIN (i.e. start address for the machine code)
+;------------------------------------------------------------
+macro("ORG\  *",NUMERIC)
+	$ := doreloc(#0)
+endm
+
+;------------------------------------------------------------
+; Align next statement's address to a multiple of some number
+;------------------------------------------------------------
+macro("ALIGN\  *",NUMERIC)
+	#while $ % #0 != 0
+		db 0FFh
+	#wend
+endm
+
+;------------------------------------------------------------
+; Define one or more bytes, preset to zero
+;------------------------------------------------------------
+macro("DSZ\  *",NUMERIC)
+	#ifndef dsz
+		var dsz
+	#endif
+	dsz := #0
+	#while dsz>0
+		db 0
+		dsz := dsz -1
+	#wend
+endm
+
+;------------------------------------------------------------
+; Define one or more bytes, preset to same user-supplied value
+;------------------------------------------------------------
+macro("REPT\  *  X  *  TIMES",NUMERIC,NUMERIC)
+	#if #0<-128 || #0>255
+		#error "Value to be repeated is not in the range -128 to 255 !"
+	#else
+		#ifndef rept
+			var rept
+		#endif
+		rept := #1
+		#while rept>0
+			db #0
+			rept := rept -1
+		#wend
+	#endif
+endm
+
+;------------------------------------------------------------
+; Define a leading byte-count string, i.e. a string which has
+; its length stored as the first byte.
+;
+; For example:
+;     LBC "ABC"  generates the bytes  03h, 41h, 42h and 43h
+;------------------------------------------------------------
+macro("LBC\  *",STRING)
+	db strlen(#0),#0
+endm
+
+;-------------------------------------------------------------------
+;
+; Standard HD6303X instruction set
+; ================================
+;
+; For some instructions, an alternate form is also supported.
+;
+; Here are some examples:
+;
+;               Standard                        Alternate
+;               --------                        ---------
+;               ADC A #123                      ADCA #123
+;               ADC A OneByteAddr               ADCA OneByteAddr
+;               ADC A Index,X                   ADCA Index,X
+;               ADC A TwoByteAddr               ADCA TwoByteAddr
+;               ASL A                           ASLA
+;               ASL B                           ASLB
+;               NEG A                           NEGA
+;
+; All of the "alternate" instructions are identified in the relevant
+; "instruction group" comments below.
+;
+; Immediate data values are indicated either by a "#" or by a "%"
+; e.g. the "ADC A #123" instruction shown above can also be written
+; as "ADC A %123" (and "ADCA #123" can be written as "ADCA %123").
+;-------------------------------------------------------------------
+; (1)   8 Bit load, compare etc group
+;       =============================
+;       ADC A #Imm      ADC A M      ADC A Disp,X      ADC A MM
+;       ADD A #Imm      ADD A M      ADD A Disp,X      ADD A MM
+;       AND A #Imm      AND A M      AND A Disp,X      AND A MM
+;       BIT A #Imm      BIT A M      BIT A Disp,X      BIT A MM
+;       CMP A #Imm      CMP A M      CMP A Disp,X      CMP A MM
+;       EOR A #Imm      EOR A M      EOR A Disp,X      EOR A MM
+;       LDA A #Imm      LDA A M      LDA A Disp,X      LDA A MM
+;       ORA A #Imm      ORA A M      ORA A Disp,X      ORA A MM
+;       SBC A #Imm      SBC A M      SBC A Disp,X      SBC A MM
+;       SUB B #Imm      SUB B M      SUB B Disp,X      SUB B MM
+;-------------------------------------------------------------------
+;       Alternate instructions
+;       ----------------------
+;       ADCA  #Imm      ADCA  M      ADCA  Disp,X      ADCA  MM
+;       ADDA  #Imm      ADDA  M      ADDA  Disp,X      ADDA  MM
+;       ANDA  #Imm      ANDA  M      ANDA  Disp,X      ANDA  MM
+;       BITA  #Imm      BITA  M      BITA  Disp,X      BITA  MM
+;       CMPA  #Imm      CMPA  M      CMPA  Disp,X      CMPA  MM
+;       EORA  #Imm      EORA  M      EORA  Disp,X      EORA  MM
+;       LDAA  #Imm      LDAA  M      LDAA  Disp,X      LDAA  MM
+;       ORAA  #Imm      ORAA  M      ORAA  Disp,X      ORAA  MM
+;       SBCA  #Imm      SBCA  M      SBCA  Disp,X      SBCA  MM
+;       SUBB  #Imm      SUBB  M      SUBB  Disp,X      SUBB  MM
+;-------------------------------------------------------------------
+
+macro("*  *  **",_SADD,_SS,_SIMM,NUMERIC)
+	#if #0=3 || #0=7
+		#error "Invalid OP CODE !!"
+	#endif
+	db 80h + #0 + (#1<<6)
+	db #3
+endm
+
+
+macro("*  *  *",_SADD,_SS,NUMERIC)
+	#if #0=3 || #0=7
+		#error "Invalid OP CODE !!"
+	#endif
+	#ifndef SADD_@
+		var SADD_@
+	#endif
+	#if #2=0 && pass=1
+		SADD_@ := line
+	#endif
+	#if SADD_@>0 || #2<0 || #2>255
+		db 0B0h + #0 + (#1<<6)
+		dw #2
+	#else
+		db 90h + #0 + (#1<<6)
+		db #2
+	#endif
+endm
+
+
+macro("*  *  *,X",_SADD,_SS,NUMERIC)
+	#if #0=3 || #0=7
+		#error "Invalid OP CODE !!"
+	#endif
+	#if #2<0 || #2>255
+		#error "Index offset is not in the range 0 to 255 !"
+	#endif
+	db 0A0h + #0 + (#1<<6)
+	db #2
+endm
+
+
+;-------------------------------------------------------------------
+; (2)   8-bit store instructions
+;	========================
+;       PSH A       PSH B
+;       PUL A       PUL B
+;       STA A M     STA A Disp,X     STA A MM
+;       STA B M     STA B Disp,X     STA B MM
+;-------------------------------------------------------------------
+;       Alternate instructions
+;       ----------------------
+;       PSHA        PSHB
+;       PULA        PULB
+;       STAA  M     STAA  Disp,X     STAA  MM
+;       STAB  M     STAB  Disp,X     STAB  MM
+;-------------------------------------------------------------------
+
+macro("*  *",_STK8,_SS)
+	#if #0=0
+		db 32h + #1
+	#else
+		db 36h + #1
+	#endif
+endm
+
+
+macro("*  *  *",_STA,_SS,NUMERIC)
+	#ifndef STA_@
+		var STA_@
+	#endif
+	#if #2=0 && pass=1
+		STA_@ := line
+	#endif
+	#if STA_@>0 || #2<0 || #2>255
+		db 0B7h + (#1<<6)
+		dw #2
+	#else
+		db 97h + (#1<<6)
+		db #2
+	#endif
+endm
+
+
+macro("*  *  *,X",_STA,_SS,NUMERIC)
+	#if #2<0 || #2>255
+		#error "Index offset is not in the range 0 to 255 !"
+	#endif
+	db 0A7h + (#1<<6)
+	db #2
+endm
+
+
+;-------------------------------------------------------------------
+; (3)   16-bit instructions
+;	===================
+;       ADD D #HiLo    ADD D M     ADD D Disp,X     ADD D MM
+;       CPX   #HiLo    CPX   M     CPX   Disp,X     CPX   MM
+;       LDD   #HiLo    LDD   M     LDD   Disp,X     LDD   MM
+;       LDS   #HiLo    LDS   M     LDS   Disp,X     LDS   MM
+;       LDX   #HiLo    LDX   M     LDX   Disp,X     LDX   MM
+;                      STD   M     STD   Disp,X     STD   MM
+;                      STS   M     STS   Disp,X     STS   MM
+;                      STX   M     STX   Disp,X     STX   MM
+;       SUB D #HiLo    SUB D M     SUB D Disp,X     SUB D MM
+;-------------------------------------------------------------------
+;       Alternate instructions
+;       ----------------------
+;       ADDD  #HiLo    ADDD  M     ADDD  Disp,X     ADDD  MM
+;       SUBD  #HiLo    SUBD  M     SUBD  Disp,X     SUBD  MM
+;-------------------------------------------------------------------
+
+macro("STD\  *,X",NUMERIC)
+	#if #0<0 || #0>255
+		#error "Index offset is not in the range 0 to 255 !"
+	#endif
+	db 0EDh
+	db #0
+endm
+
+
+macro("STD\  *",NUMERIC)
+	#ifndef STD_@
+		var STD_@
+	#endif
+	#if #0=0 && pass=1
+		STD_@ := line
+	#endif
+	#if STD_@>0 || #0<0 || #0>255
+		db 0FDh
+		dw #0
+	#else
+		db 0DDh
+		db #0
+	#endif
+endm
+
+
+macro("*\  *,X",_S2B,NUMERIC)
+	#if #1<0 || #1>255
+		#error "Index offset is not in the range 0 to 255 !"
+	#endif
+	db 0AFh + (#0<<6)
+	db #1
+endm
+
+
+macro("*\  *",_S2B,NUMERIC)
+	#ifndef S2B_@
+		var S2B_@
+	#endif
+	#if #1=0 && pass=1
+		S2B_@ := line
+	#endif
+	#if S2B_@>0 || #1<0 || #1>255
+		db 0BFh + (#0<<6)
+		dw #1
+	#else
+		db 9Fh + (#0<<6)
+		db #1
+	#endif
+endm
+
+
+macro("*  D  **",_SIM2,_SIMM,NUMERIC)
+	db 83h + (#0<<6)
+	dw #2
+endm
+
+
+macro("*\  **",_SIM3,_SIMM,NUMERIC)
+	db 8Eh + (#0<<6)
+	dw #2
+endm
+
+
+macro("*\  **",_SIM4,_SIMM,NUMERIC)
+	db 8Ch + (#0<<6)
+	dw #2
+endm
+
+
+macro("*  D  *,X",_SIM2,NUMERIC)
+	#if #1<0 || #1>255
+		#error "Index offset is not in the range 0 to 255 !"
+	#endif
+	db 0A3h + (#0<<6)
+	db #1
+endm
+
+
+macro("*  D  *",_SIM2,NUMERIC)
+	#ifndef SIM2_@
+		var SIM2_@
+	#endif
+	#if #1=0 && pass=1
+		SIM2_@ := line
+	#endif
+	#if SIM2_@>0 || #1<0 || #1>255
+		db 0B3h + (#0<<6)
+		dw #1
+	#else
+		db 93h + (#0<<6)
+		db #1
+	#endif
+endm
+
+
+macro("*\  *,X",_SIM3,NUMERIC)
+	#if #1<0 || #1>255
+		#error "Index offset is not in the range 0 to 255 !"
+	#endif
+	db 0AEh + (#0<<6)
+	db #1
+endm
+
+
+macro("*\  *",_SIM3,NUMERIC)
+	#ifndef SIM3_@
+		var SIM3_@
+	#endif
+	#if #1=0 && pass=1
+		SIM3_@ := line
+	#endif
+	#if SIM3_@>0 || #1<0 || #1>255
+		db 0BEh + (#0<<6)
+		dw #1
+	#else
+		db 9Eh + (#0<<6)
+		db #1
+	#endif
+endm
+
+
+macro("*\  *,X",_SIM4,NUMERIC)
+	#if #1<0 || #1>255
+	  #error "Index offset is not in the range 0 to 255 !"
+	#endif
+	db 0ACh + (#0<<6)
+	db #1
+endm
+
+
+macro("*\  *",_SIM4,NUMERIC)
+	#ifndef SIM4_@
+		var SIM4_@
+	#endif
+	#if #1=0 && pass=1
+		SIM4_@ := line
+	#endif
+	#if SIM4_@>0 || #1<0 || #1>255
+		db 0BCh + (#0<<6)
+		dw #1
+	#else
+		db 09Ch + (#0<<6)
+		db #1
+	#endif
+endm
+
+
+;-------------------------------------------------------------------
+; (4)   Immediate data instructions
+;	===========================
+;       AIM #Imm,M      AIM #Imm,Disp,X
+;       EIM #Imm,M      EIM #Imm,Disp,X
+;       OIM #Imm,M      OIM #Imm,Disp,X
+;       TIM #Imm,M      TIM #Imm,Disp,X
+;-------------------------------------------------------------------
+
+macro("*\  **,*",_SIM1,_SIMM,NUMERIC,NUMERIC)
+	#if #2<0 || #2>255
+		#error "Immediate data not in the range 0 to 255 !"
+	#endif
+	#if #3<0 || #3>255
+		#error "Address is not in the range 0 to 255 !"
+	#endif
+	db 70h + (0Bh>>#0)
+	db #2
+	db #3
+endm
+
+
+macro("*\  **,*,X",_SIM1,_SIMM,NUMERIC,NUMERIC)
+	#if #2<0 || #2>255
+		#error "Immediate data not in the range 0 to 255 !"
+	#endif
+	#if #3<0 || #3>255
+		#error "Index offset is not in the range 0 to 255 !"
+	#endif
+	db 60h + (0Bh>>#0)
+	db #2
+	db #3
+endm
+
+
+;-------------------------------------------------------------------
+; (5)   General purpose arithmetic and CPU control
+;	==========================================
+;       ABA     ABX     ASLD    CBA     CLC     CLI     CLV
+;       DAA     DES     DEX     INS     INX     LSRD    MUL
+;       NOP     PSHX    PULX    RTI     RTS     SBA     SEC
+;       SEI     SEV     SLP     SWI     TAB     TAP     TBA
+;       TPA     TRAP    TSX     TXS     WAI     XGDX
+;-------------------------------------------------------------------
+
+macro("NOP")
+	db 1
+endm
+
+
+macro("TRAP")
+	db 0
+endm
+
+
+macro("WAI")
+	db 3Eh
+endm
+
+
+macro("SWI\  **",_SIMM,NUMERIC)
+	#if #1<0 || #1>255
+		#error "SWI function code not in range 0 to 255 !"
+	#endif
+	db 3Fh
+	db #1
+endm
+
+
+macro("*",_S1B1)
+	db 04h + #0
+endm
+
+
+macro("*",_S1B2)
+	db 16h + #0
+endm
+
+
+macro("*",_S1B3)
+	#if #0=2 || #0=3 || #0=6 || #0=7
+		#error "Invalid OP CODE !!"
+	#endif
+	db 30h + #0
+endm
+
+
+;-------------------------------------------------------------------
+; (6)   Byte manipulation group
+;	=======================
+;       ASL A    ASL B    ASL Disp,X    ASL MM
+;       ASR A    ASR B    ASR Disp,X    ASR MM
+;       CLR A    CLR B    CLR Disp,X    CLR MM
+;       COM A    COM B    COM Disp,X    COM MM
+;       DEC A    DEC B    DEC Disp,X    DEC MM
+;       INC A    INC B    INC Disp,X    INC MM
+;       LSR A    LSR B    LSR Disp,X    LSR MM
+;       NEG A    NEG B    NEG Disp,X    NEG MM
+;       ROL A    ROL B    ROL Disp,X    ROL MM
+;       ROR A    ROR B    ROR Disp,X    ROR MM
+;       TST A    TST B    TST Disp,X    TST MM
+;-------------------------------------------------------------------
+;       Alternate instructions
+;       ----------------------
+;       ASLA     ASLB
+;       ASRA     ASRB
+;       CLRA     CLRB
+;       COMA     COMB
+;       DECA     DECB
+;       INCA     INCB
+;       LSRA     LSRB
+;       NEGA     NEGB
+;       ROLA     ROLB
+;       RORA     RORB
+;       TSTA     TSTB
+;-------------------------------------------------------------------
+
+macro("*  *",_SB8,_SS)
+	#if #0=1 || #0=2 || #0=5 || #0=11 || #0=14
+		#error "Invalid OP CODE !!"
+	#endif
+	db 40h + #0 + (#1<<4)
+endm
+
+
+macro("*\  *,X",_SB8,NUMERIC)
+	#if #0=1 || #0=2 || #0=5 || #0=11 || #0=14
+		#error "Invalid OP CODE !!"
+	#endif
+	#if #1<0 || #1>255
+		#error "Index offset is not in the range 0 to 255 !"
+	#endif
+	db 60h + #0
+	db #1
+endm
+
+
+macro("*\  *",_SB8,NUMERIC)
+	#if #0=1 || #0=2 || #0=5 || #0=11 || #0=14
+		#error "Invalid OP CODE !!"
+	#endif
+	db 70h + #0
+	dw #1
+endm
+
+
+;-------------------------------------------------------------------
+; (7)   Bit test and set group
+;       ======================
+;       BCLR 0,M         BSET 0,M         BTGL 0,M         BTST 0,M
+;       BCLR 1,M         BSET 1,M         BTGL 1,M         BTST 1,M
+;       BCLR 2,M         BSET 2,M         BTGL 2,M         BTST 2,M
+;       BCLR 3,M         BSET 3,M         BTGL 3,M         BTST 3,M
+;       BCLR 4,M         BSET 4,M         BTGL 4,M         BTST 4,M
+;       BCLR 5,M         BSET 5,M         BTGL 5,M         BTST 5,M
+;       BCLR 6,M         BSET 6,M         BTGL 6,M         BTST 6,M
+;       BCLR 7,M         BSET 7,M         BTGL 7,M         BTST 7,M
+;
+;       BCLR 0,Disp,X    BSET 0,Disp,X    BTGL 0,Disp,X    BTST 0,Disp,X
+;       BCLR 1,Disp,X    BSET 1,Disp,X    BTGL 1,Disp,X    BTST 1,Disp,X
+;       BCLR 2,Disp,X    BSET 2,Disp,X    BTGL 2,Disp,X    BTST 2,Disp,X
+;       BCLR 3,Disp,X    BSET 3,Disp,X    BTGL 3,Disp,X    BTST 3,Disp,X
+;       BCLR 4,Disp,X    BSET 4,Disp,X    BTGL 4,Disp,X    BTST 4,Disp,X
+;       BCLR 5,Disp,X    BSET 5,Disp,X    BTGL 5,Disp,X    BTST 5,Disp,X
+;       BCLR 6,Disp,X    BSET 6,Disp,X    BTGL 6,Disp,X    BTST 6,Disp,X
+;       BCLR 7,Disp,X    BSET 7,Disp,X    BTGL 7,Disp,X    BTST 7,Disp,X
+;-------------------------------------------------------------------
+
+macro("*\  *,*",_SBM,_SBIT,NUMERIC)
+	#if #2<0 || #2>255
+		#error "Address not in the range 0 to 255 !"
+	#endif
+	db 70h + (0Bh>>#0)
+	#if #0=3
+		db 255 - (1<<#1)
+	#else
+		db 1<<#1
+	#endif
+	db #2
+endm
+
+
+macro("*\  *,*,X",_SBM,_SBIT,NUMERIC)
+	#if #2<0 || #2>255
+		#error "Invalid offset address !"
+	#endif
+	db 60h + (0Bh>>#0)
+	#if #0=3
+			db 255 - (1<<#1)
+	#else
+		db 1<<#1
+	#endif
+	db #2
+endm
+
+
+;-------------------------------------------------------------------
+; (8)   Jump and call group
+;	===================
+;	BCC Rel      BCS Rel      BEQ Rel      BGE Rel      BGT Rel
+;	BHI Rel      BLE Rel      BLS Rel      BLT Rel      BMI Rel
+;	BNE Rel      BPL Rel      BRA Rel      BRN Rel      BSR Rel
+;       BVC Rel      BVS Rel
+;                    JMP Disp,X   JMP MM
+;       JSR M        JSR Disp,X   JSR MM
+;-------------------------------------------------------------------
+
+macro("*\  *",_SCB,LABEL)
+	#if pass=2 && (#1 > $) &&((#1 - $) > 129)
+		#error "Forward branch is out of range !"
+	#endif
+	#if pass=2 && ($ > #1) && (($ - #1) > 126)
+		#error "Backward branch is out of range !"
+	#endif
+	#if #0=16
+		db 8Dh
+	#else
+		db 20h + #0
+	#endif
+	drb doreloc(#1)
+endm
+
+
+macro("*\  * *",_SCB,_SIGN,NUMERIC)
+	#if #0=16
+		db 8Dh
+	#else
+		db 20h + #0
+	#endif
+	#ifdef LABELSONLY
+		#error "Numeric branches have been prohibited !"
+		db 0
+	#else
+		#if #1=0 && (#2 > 127 || #2 < 0)
+			#error "Numeric forward branch is out of range !"
+		#elsif #1=1 && (#2 >128 || #2 <0)
+			#error "Numeric backward branch is out of range !"
+		#endif
+		#if #1=0
+			db #2
+		#else
+			db 0-#2
+		#endif
+	#endif
+endm
+
+
+macro("*\  *",_SCB,NUMERIC)
+	#if #0=16
+		db 8Dh
+	#else
+		db 20h + #0
+	#endif
+	#ifdef LABELSONLY
+		#error "Numeric branches have been prohibited !"
+		db 0
+	#else
+		#ifdef SIGNEDONLY
+			#error "Numeric branches must have + or - sign !"
+			db 0
+		#else
+			#if #1 > 127
+				#error "Numeric forward branch is out of range !"
+			#endif
+			db #1
+		#endif
+	#endif
+endm
+
+
+macro("JSR\  *",NUMERIC)
+	#ifndef JSR_@
+		var JSR_@
+	#endif
+	#if #0=0 && pass=1
+		JSR_@ := line
+	#endif
+	#if JSR_@>0 || #0<0 || #0>255
+		db 0BDh
+		dw #0
+	#else
+		db 9Dh
+		db #0
+	#endif
+endm
+
+
+macro("JSR\  *,X",NUMERIC)
+	#if #0<0 || #0>255
+		#error "Index offset is not in range 0 to 255 !"
+	#endif
+	db 0ADh
+	db #0
+endm
+
+
+macro("JMP\  *",NUMERIC)
+	db 7Eh
+	dw #0
+endm
+
+
+macro("JMP\  *,X",NUMERIC)
+	#if #0<0 || #0>255
+		#error "Index offset is not in the range 0 to 255 !"
+	#endif
+	db 6Eh
+	db #0
+endm
+
+
+;-------------------------------------------------------------------
+;       END of the HD6303X Macros for the PCMAC Macro Assembler
+;-------------------------------------------------------------------

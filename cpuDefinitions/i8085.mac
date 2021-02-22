@@ -1,0 +1,253 @@
+;*******************************************************
+;*                                                     *
+;*           ============================              *
+;*             i8085 MACRO DEFINITIONS                 *
+;*           ============================              *
+;*             for use with the Versoft                *
+;*              PCMAC Macro Assembler                  *
+;*           ============================              *
+;*                                                     *
+;***************************************************************************
+;*
+;*  $Revision: 1.00 $ by Gerald Elzing
+;*
+;*  $Date: 2014/11/10 21:09:24 $
+;*
+;***************************************************************************
+;
+; This file contains only those macros required to support the Intel
+; i8085 Processor.(+ i8080 because backward compatibility)
+;
+;***************************************************************************
+;
+; PSEUDO OPS
+; ----------
+; In addition to defining the Instruction Set, this file defines the
+; following pseudo ops or directives:
+;
+; ORG   - defines the start address (origin) for a machine code program block
+;         (e.g. "ORG 7000h" sets the start address to hexadecimal 7000)
+;
+; DSZ   - defines one or more bytes, all preset to zero
+;         (e.g. "DSZ 10" generates a block of 10 bytes, each set to zero)
+;
+; REPT  - defines one or more bytes, all preset to the same user-supplied value
+;         (e.g. "REPT 255 x 3 times" generates 3 bytes, each set to 255)
+;
+; LBC   - defines leading byte-count strings, i.e. first byte holds the length
+;         (e.g. LBC "Hello" generates the six hex bytes "05 48 65 6C 6C 6F")
+;
+;***************************************************************************
+;
+; The i8085 stores 16-bit values in LO-HI order
+; (e.g. JSR 1234h stored as BDh, 34h, 12h)
+;
+#dw lh
+#dd lh
+
+;
+; Register constants
+;
+
+const	_SS	:=	(B,C,D,E,H,L,M,A)
+const	_SR	:=	(B,D,H,SP)
+const	_SQ	:=	(B,D,H,PSW)
+const	_SO	:=	(B,D)
+
+;
+;Instruction constants
+;
+
+const	_SAR	:=	(ADD,ADC,SUB,SBB,ANA,XRA,ORA,CMP)
+const	_SARI	:=	(ADI,ACI,SUI,SBI,ANI,XRI,ORI,CPI)
+const	_SID	:=	(INX,DAD,DCX)
+const	_SAA	:=	(STAX,LDAX)
+const	_SAB	:=	(POP,PUSH)
+const	_SAC	:=	(OUT,IN)
+const	_SAD	:=	(SHLD,LHLD,STA,LDA)
+const	_SAE	:=	(RLC,RRC,RAL,RAR,DAA,CMA,STC,CMC)
+
+const	_SAF	:=	(XTHL,XCHG,DI,EI)
+const	_SBA	:=	(RET,HLT,PCHL,SPHL)
+const	_SBB	:=	(RIM,SIM)
+const	_SBC	:=	(INR,DCR)
+
+const	_SRET	:=	(R);halves
+const	_SJC	:=	(J,C);halves
+const	_SP	:=	(NZ,Z,NC,C,PO,PE,P,M);other halves
+
+;***************************************************************************
+;
+; Pseudo op macro definitions
+;
+;***************************************************************************
+
+;------------------------------------------------------------
+; Set program ORIGIN (i.e. start address for the machine code)
+;------------------------------------------------------------
+macro("ORG\  *",NUMERIC)
+	$ := doreloc(#0)
+endm
+
+;------------------------------------------------------------
+; Align next statement's address to a multiple of some number
+;------------------------------------------------------------
+macro("ALIGN\  *",NUMERIC)
+	#while $ % #0 != 0
+		db 0FFh
+	#wend
+endm
+
+;------------------------------------------------------------
+; Define one or more bytes, preset to zero
+;------------------------------------------------------------
+macro("DSZ\  *",NUMERIC)
+	#ifndef dsz
+		var dsz
+	#endif
+	dsz := #0
+	#while dsz>0
+		db 0
+		dsz := dsz -1
+	#wend
+endm
+
+;------------------------------------------------------------
+; Define one or more bytes, preset to same user-supplied value
+;------------------------------------------------------------
+macro("REPT\  *  X  *  TIMES",NUMERIC,NUMERIC)
+	#if #0<-128 || #0>255
+		#error "Value to be repeated is not in the range -128 to 255 !"
+	#else
+		#ifndef rept
+			var rept
+		#endif
+		rept := #1
+		#while rept>0
+			db #0
+			rept := rept -1
+		#wend
+	#endif
+endm
+
+;------------------------------------------------------------
+; Define a leading byte-count string, i.e. a string which has
+; its length stored as the first byte.
+;
+; For example:
+;     LBC "ABC"  generates the bytes  03h, 41h, 42h and 43h
+;------------------------------------------------------------
+macro("LBC\  *",STRING)
+	db strlen(#0),#0
+endm
+
+;-------------------------------------------------------------------
+;
+; Standard i8085 instruction set
+; ================================
+
+macro("MOV\  *,*",_SS,_SS);		MOV, B C D E H L M A
+	db	40h + (#0<<3) + #1
+endm
+
+macro("MVI\  *,*",_SS,NUMERIC);		MVI, B C D E H L M A
+	db	06h + (#0<<3),#1
+endm
+
+macro("LXI\  *,*",_SR,NUMERIC);		LXI, B D H SP
+	db	01h + (#0<<4)
+	dw	#1
+endm
+
+macro("CALL\  *",NUMERIC)
+	db	0CDh
+	dw	#0
+endm
+
+macro("JMP\  *",NUMERIC)
+	db	0C3h
+	dw	#0
+endm
+
+macro("RST\  *",NUMERIC);		RST 0-7
+	#if #0<0 || #0>7
+		#error "RST must be between 0-7 !!"
+	#endif
+	db	0C7h + (#0<<3)
+endm
+
+macro("NOP")
+	db	00h
+endm
+
+macro("*\  *",_SAR,_SS);		ADD ADC SUB SBB ANA XRA ORA CMP, B C D E H L M A
+	db	80h + (#0<<3) + #1
+endm
+
+macro("*\  *",_SARI,NUMERIC);		ADI ACI SUI SBI ANI XRI ORI CPI
+	db	0c6h + (#0<<3),#1
+endm
+
+macro("**\  *",_SJC,_SP,NUMERIC);	J C, NZ Z NC C PO PE P M
+	db	0C2h + (#0<<1) + (#1<<3)
+	dw	#2
+endm
+
+macro("**",_SRET,_SP);			R, NZ Z NC C PO PE P M
+	db	0C0h + (#1<<3)
+endm
+
+macro("*\  *",_SAA,_SO);		STAX LDAX, B D
+	db	02h + (#0<<3) + (#1<<4)
+endm
+
+macro("*\  *",_SAB,_SQ);		POP PUSH, B D H PSW
+	db	0C1h + (#0<<2) + (#1<<4)
+endm
+
+macro("*\  *",_SAC,NUMERIC);		OUT IN
+	db	0D3h + (#0<<3),#1
+endm
+
+macro("*\  *",_SAD,NUMERIC);		SHLD LHLD STA LDA
+	db	22h + (#0<<3)
+	dw	#1
+endm
+
+macro("*",_SAE);			RLC RRC RAL RAR DAA CMA STC CMC
+	db	07h + (#0<<3)
+endm
+
+macro("*",_SAF);			XTHL XCHG DI EI
+	db	0E3h + (#0<<3)
+endm
+
+macro("*",_SBA);			RET HLT PCHL SPHL
+	#if #0<>1
+		db	0C9h + (#0<<4)
+	#else
+		db	76h
+	#endif
+endm
+
+macro("*",_SBB);			RIM SIM
+	db	20h + (#0<<4)
+endm
+
+macro("*\  *",_SBC,_SS);			INR DCR
+	db	04h + #0 + (#1<<3)
+endm
+
+macro("*\  *",_SID,_SR);		INX DAD DCX, B D H SP
+	#if #0=0
+		db	03h + (#1<<4)
+	#elsif #0=1
+		db	09h + (#1<<4)
+	#elsif #0=2
+		db	0Bh + (#1<<4)
+	#endif
+endm
+
+;-------------------------------------------------------------------
+;       END of the i8085 Macros for the PCMAC Macro Assembler
+;-------------------------------------------------------------------
