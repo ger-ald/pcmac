@@ -19,6 +19,6 @@
 
 
 int next_line(void);
-FILE *open_a_file_for_read(char *t, int type);
+FILE *open_a_file_for_read(char *filename, int type);
 
 #endif /* FILE_H_ */

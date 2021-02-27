@@ -19,7 +19,6 @@
 
 #include "error.h"
 #include "express.h"
-//#include "file.h"
 #include "generate.h"
 #include "getline.h"
 #include "init.h"
@@ -188,22 +187,23 @@ int next_line(void)
 	return 0;
 }/* End of function next_line() */
 
-FILE *open_a_file_for_read(char *t, int type)
+FILE *open_a_file_for_read(char *filename, int type)
 {
-	char k[MAXLINLEN];
+	char fopenName[MAXLINLEN];
 	char s1[MAXLINLEN];
 	char *s;
 	int i;
 	FILE *fp = NULL;
 
+	fopenName[0] = '\0';
 	s = s1;
-	strcpy(s, t);
+	strcpy(s, filename);
 
-	strcpy(k, include_directory);
-	*k = '\0';
 	if(*s == '<')
 	{
-		strcpy(k, include_directory);
+		/* file should come from the include dir */
+
+		strcpy(fopenName, include_directory);
 		s++;
 		i = strlen(s);
 		while(i && isspace(s[i - 1]))
@@ -215,6 +215,8 @@ FILE *open_a_file_for_read(char *t, int type)
 	}
 	else if(*s == '\"')
 	{
+		/* filename has quotes to remove */
+
 		s++;
 		i = strlen(s);
 		while(i && isspace(s[i - 1]))
@@ -224,14 +226,15 @@ FILE *open_a_file_for_read(char *t, int type)
 		else
 			s[i - 1] = '\0';
 	}
-	strcat(k, s);
+
+	strcat(fopenName, s);
 	switch(type)
 	{
 		case O_TEXT:
-			fp = fopen(k, "r");
+			fp = fopen(fopenName, "r");
 			break;
 		case O_BINARY:
-			fp = fopen(k, "rb");
+			fp = fopen(fopenName, "rb");
 			break;
 		default:
 			sprintf(name, "Invalid file open type=%d in 'open_a_file_for_read'!", type);
@@ -239,8 +242,7 @@ FILE *open_a_file_for_read(char *t, int type)
 	}
 	if(fp)
 		return fp;
-	sprintf(name, "Unable to open the file %s.", k);
+	sprintf(name, "Unable to open the file %s.", fopenName);
 	error(name, FATAL);
 	return NULL;
 }/* End of function open_a_file_for_read() */
-

@@ -177,7 +177,7 @@ struct symbol *search_in_the_table(char *s)
 void listsymbols(void)
 {
 	int i;
-	fprintf(listfile, "SYMBOL TABLE:\n");
+	fprintf(listfile, "\nSYMBOL TABLE:\n");
 	fprintf(listfile, "-------------\n");
 	for(i = 0; i < PRIME; i++) /* Go thru the hash table. */
 		list_tree(hashtable[i]);

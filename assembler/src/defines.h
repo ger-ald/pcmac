@@ -124,11 +124,11 @@
 /* Constants for listing.
  */
 /* Width for the address. */
-#define ADDRESS		4
+#define ADDRESS		8
 /* The number of value to print into the same line. */
-#define VALUESS		3
+#define VALUESS		4
 /* The maximal length of an ascii number. */
-#define MAXASCLEN 4
+#define MAXASCLEN	4
 /* The number of the stacks for the user */
 #define USRSTKSIZ	100
 

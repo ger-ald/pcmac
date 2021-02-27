@@ -34,6 +34,7 @@
 #include "tfunc.h"
 #include "utilits.h"
 
+#define DEBUG
 
 int checkline(char *, char *, struct set *[], char *[], int);
 int serch_in_set(char *, struct set *, char **, int);
@@ -82,18 +83,19 @@ int main(int argc, char **argv, char **env)
 		fprintf(stderr, "Usage: pcmac ['-' options ] filename\n");
 		fprintf(stderr, " Options:\n");
 		fprintf(stderr, "l list on\n");
-		fprintf(stderr, "ln&name listfilename+list on\n");
-		fprintf(stderr, "m list macro extention(+list).\n");
-		fprintf(stderr, "mn&name listfilename+macro listing+listing.\n");
+		fprintf(stderr, "ln&name listfilename + list.\n");
+		fprintf(stderr, "m list macro extention + list.\n");
+		fprintf(stderr, "mn&name listfilename + macro listing + list.\n");
 		fprintf(stderr, "s symbol table\n");
 		fprintf(stderr, "c case sensitivity\n");
 		fprintf(stderr, "n&outfilename\n");
+		fprintf(stderr, "i&includedir\n");
 		fprintf(stderr, "K to make library.\n");
 		fprintf(stderr, "o generate object.\n");
 		fprintf(stderr, "t don't care publics and externals.\n");
 		fprintf(stderr, "h generate header file.\n");
 		fprintf(stderr, "v version number.\n");
-		fprintf(stderr, "\n& means: write the name without any space!\n");
+		fprintf(stderr, "\n& means: write the name without any space! (or surround with '\"'s)\n");
 		exit(1);
 	}
 	/* We search the default enviroment. */
@@ -127,31 +129,32 @@ int main(int argc, char **argv, char **env)
 	{
 		argv++;
 		if(**argv == '-')
-		{							//Option.
+		{
+			//Option.
 			switch((*argv)[1])
 			{
-				case 'K':
+				case 'K':	//make library
 					libraryswitch = 1;
 					break;
-				case 'o':
+				case 'o':	//generate object
 					objgen = 1;
 					break;
-				case 'h':
+				case 'h':	//generate header file
 					headswitch = 1;
 					break;
-				case 'p':
+				case 'p':	//press any key before starting
 					stop_before_start = 1;
 					break;
-				case 'm':
+				case 'm':	//list macro extention(+list)
 					maclist = 1;
 					// no break
-				case 'l':
+				case 'l':	//list on
 					switch((*argv)[2])
 					{
 						case '\0':
 							glistswitch = 1;
 							break;
-						case 'n':
+						case 'n':	//name listfilename
 							listfile = fopen(&((*argv)[3]), "w");
 							if(listfile)
 								stdoutsw = 0;
@@ -162,7 +165,7 @@ int main(int argc, char **argv, char **env)
 							break;
 					}
 					break;
-				case 's':
+				case 's':	//symbol table
 					switch((*argv)[2])
 					{
 						case '\0':
@@ -173,7 +176,7 @@ int main(int argc, char **argv, char **env)
 							break;
 					}
 					break;
-				case 'c':
+				case 'c':	//case sensitivity
 					switch((*argv)[2])
 					{
 						case '\0':
@@ -184,13 +187,27 @@ int main(int argc, char **argv, char **env)
 							break;
 					}
 					break;
-				case 'n':
+				case 'n':	//outfilename
 					outfilnam = &((*argv)[2]);
 					break;
-				case 't':
+				case 'i':	//includedir
+					//include dir arg overrides the env include
+
+					strncpy(name, &((*argv)[2]), MAXLINLEN - 2);//keep 2 chars free for a '\0' and maybe a '/'
+					i = strnlen(name, MAXLINLEN - 2);
+					if(!i)
+						error("Invalid include dir option.", NORMAL);
+					if(name[i - 1] != '/')
+						name[i++] = '/';
+					name[i] = '\0';
+					include_directory = strdup(name);
+					if(!include_directory)
+						error("End of memory!", FATAL);
+					break;
+				case 't':	//don't care publics and externals
 					tskswitch = 1;
 					break;
-				case 'v':
+				case 'v':	//version number
 					write_version();
 					break;
 				default:
