@@ -722,7 +722,7 @@ void func_push(void)
 		else
 		{
 			expression(first_unused_character, &_value, &err, &reloc);
-			if(err == SERROR || err == RBRAMISSING)
+			if(err == SERROR || err == RPARENTMISSING)
 				error("Syntax error in the expression.", NORMAL);
 			usrpush(_value, value);
 		}
@@ -909,14 +909,14 @@ void func_direc(void)
 		error(name, NORMAL);
 	}
 }
+
 void func_def_byte(void)
 {
 	do
 	{
 		s = first_unused_character;
 		getsymbol();
-		while(isspace(*first_unused_character))
-			first_unused_character++;
+		SPACEAT;
 		if(symbol == IDENTIFIER && (*first_unused_character == ',' || !*first_unused_character) && (symptr =
 				search_in_the_table(name))->type_of_the_symbol == EXTERNAL)
 		{
@@ -931,8 +931,7 @@ void func_def_byte(void)
 		else
 		{
 			first_unused_character = s;
-			while(isspace(*first_unused_character))
-				first_unused_character++;
+			SPACEAT;
 			if(*first_unused_character == '\"')
 			{/*string*/
 				first_unused_character++;
@@ -1037,7 +1036,7 @@ void func_def_byte(void)
 					sprintf(name, "Not 8 bit value(%lx) for a byte.", value);
 					error(name, NORMAL);
 				}
-				if(err == RBRAMISSING)
+				if(err == RPARENTMISSING)
 					error("Right bracket missing in the expression.", NORMAL);
 				else if(err == SERROR)
 					error("Syntax error in the expression.", NORMAL);
@@ -1052,6 +1051,7 @@ void func_def_byte(void)
 	if(symbol != UNKNOWN)
 		error("Unexpected characters on the end of the line.", NORMAL);
 }
+
 /*
  **
  ** Compiles the line 's' if that consists of a primitive line.
@@ -1105,8 +1105,7 @@ void do_primitive(char *ss)
 				{
 					s = first_unused_character;
 					getsymbol();
-					while(isspace(*first_unused_character))
-						first_unused_character++;
+					SPACEAT;
 					if(symbol == IDENTIFIER && (*first_unused_character == ',' || !*first_unused_character) && (symptr =
 							search_in_the_table(name))->type_of_the_symbol == EXTERNAL)
 					{
@@ -1131,7 +1130,7 @@ void do_primitive(char *ss)
 							sprintf(name, "Not 8 bit value(%lx) for a byte.", value);
 							error(name, NORMAL);
 						}
-						if(err == RBRAMISSING || err == SERROR)
+						if(err == RPARENTMISSING || err == SERROR)
 							error("Syntax error in the expression.", NORMAL);
 						if(pass == 2 && err == UNDEFLABEL)
 							error("Undefined label in the expression.", NORMAL);
@@ -1147,8 +1146,7 @@ void do_primitive(char *ss)
 				{
 					s = first_unused_character;
 					getsymbol();
-					while(isspace(*first_unused_character))
-						first_unused_character++;
+					SPACEAT;
 					if(symbol == IDENTIFIER && (*first_unused_character == ',' || !*first_unused_character) && (symptr =
 							search_in_the_table(name))->type_of_the_symbol == EXTERNAL)
 					{
@@ -1170,7 +1168,7 @@ void do_primitive(char *ss)
 						value -= *dollar + 2;
 						if((value < -32768l || value > 65535l) && pass == 2)
 							error("Not 16 bit value for a word.", NORMAL);
-						if(err == RBRAMISSING || err == SERROR)
+						if(err == RPARENTMISSING || err == SERROR)
 							error("Syntax error in the expression.", NORMAL);
 						if(pass == 2 && err == UNDEFLABEL)
 							error("Undefined label in the expression.", NORMAL);
@@ -1186,8 +1184,7 @@ void do_primitive(char *ss)
 				{
 					s = first_unused_character;
 					getsymbol();
-					while(isspace(*first_unused_character))
-						first_unused_character++;
+					SPACEAT;
 					if(symbol == IDENTIFIER && (*first_unused_character == ',' || !*first_unused_character) && (symptr =
 							search_in_the_table(name))->type_of_the_symbol == EXTERNAL)
 					{
@@ -1207,7 +1204,7 @@ void do_primitive(char *ss)
 							note_reloc( DEFWORD);
 						if((value < -32768l || value > 65535l) && pass == 2)
 							error("Not 16 bit value for a word.", NORMAL);
-						if(err == RBRAMISSING || err == SERROR)
+						if(err == RPARENTMISSING || err == SERROR)
 							error("Syntax error in the expression.", NORMAL);
 						if(pass == 2 && err == UNDEFLABEL)
 							error("Undefined label in the expression.", NORMAL);
@@ -1222,8 +1219,7 @@ void do_primitive(char *ss)
 				{
 					s = first_unused_character;
 					getsymbol();
-					while(isspace(*first_unused_character))
-						first_unused_character++;
+					SPACEAT;
 					if(symbol == IDENTIFIER && (*first_unused_character == ',' || !*first_unused_character) && (symptr =
 							search_in_the_table(name))->type_of_the_symbol == EXTERNAL)
 					{
@@ -1243,7 +1239,7 @@ void do_primitive(char *ss)
 							/* In pass 1 can be undefined =>nonreloc */
 							error("Non relocatable for dword offset!",
 							WARNING);
-						if(err == RBRAMISSING || err == SERROR)
+						if(err == RPARENTMISSING || err == SERROR)
 							error("Syntax error in the expression.", NORMAL);
 						if(pass == 2 && err == UNDEFLABEL)
 							error("Undefined label in the expression.", NORMAL);
@@ -1259,8 +1255,7 @@ void do_primitive(char *ss)
 				{
 					s = first_unused_character;
 					getsymbol();
-					while(isspace(*first_unused_character))
-						first_unused_character++;
+					SPACEAT;
 					if(symbol == IDENTIFIER && (*first_unused_character == ',' || !*first_unused_character) && (symptr =
 							search_in_the_table(name))->type_of_the_symbol == EXTERNAL)
 					{
@@ -1278,7 +1273,7 @@ void do_primitive(char *ss)
 						expression(first_unused_character, &value, &err, &reloc);
 						if(reloc)
 							note_reloc( DEFDWORD);
-						if(err == RBRAMISSING || err == SERROR)
+						if(err == RPARENTMISSING || err == SERROR)
 							error("Syntax error in the expression.", NORMAL);
 						if(pass == 2 && err == UNDEFLABEL)
 							error("Undefined label in the expression.", NORMAL);
@@ -1302,7 +1297,7 @@ void errorcheck(int err)
 	{
 		case 0:
 			return; // No error.
-		case RBRAMISSING:
+		case RPARENTMISSING:
 		case SERROR:
 			error("Syntax error in the expression.", NORMAL);
 			break;

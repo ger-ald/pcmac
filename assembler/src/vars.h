@@ -18,7 +18,7 @@
 char *first_unused_character;
 /* Points the first character of the lexeme. */
 char *first_character_of_the_lexeme;
-/* The last symbol was read bu the getsymbol() */
+/* The last symbol was read by the getsymbol() */
 int symbol;
 /* The type of an error. */
 int errortype;

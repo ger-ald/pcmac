@@ -5,6 +5,28 @@
 	"tasks": [
 		{
 			"type": "shell",
+			"label": "release pcmac",
+			"command": "make -j6 release",
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"windows": {
+				"command": "${workspaceFolder}\\mingwCompile.bat",
+				"args": [
+					"-j6",
+					"release",
+				],
+				"options": {
+					"cwd": "${workspaceFolder}"
+				}
+			},
+		},
+		{
+			"type": "shell",
 			"label": "build pcmac",
 			"command": "make -j6",
 			"problemMatcher": [
@@ -15,19 +37,35 @@
 				"isDefault": true
 			},
 			"windows": {
-				"command": "${workspaceFolder}\\msvcCompile.bat",
+				"command": "${workspaceFolder}\\mingwCompile.bat",
 				"args": [
-					"/MD",
-					"/Zi",
-					"/EHsc",
-					"/Fe:",
-					"${workspaceFolder}\\windowsBuild/pcmac.exe",
-					"${workspaceFolder}\\src/*.c"
+					"-j6",
 				],
-				"problemMatcher": ["$msCompile"],
 				"options": {
 					"cwd": "${workspaceFolder}"
 				}
+			},
+		},
+		{
+			"type": "shell",
+			"label": "msvc build pcmac",
+			"command": "${workspaceFolder}\\msvcCompile.bat",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"args": [
+				"/MD",
+				"/MP",
+				"/Zi",
+				"/EHsc",
+				"/Fe:",
+				"${workspaceFolder}\\windowsBuild/pcmac.exe",
+				"${workspaceFolder}\\src/*.c"
+			],
+			"problemMatcher": ["$msCompile"],
+			"options": {
+				"cwd": "${workspaceFolder}"
 			},
 		}
 	]

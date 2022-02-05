@@ -11,6 +11,22 @@
 ; the environment var or with option '-i"incdir"'. if not then it is the same as "file")
 #macros <i8085.mac>
 
+macro("LBC2\  *",STRING)
+	#ifndef len
+		var len
+	#endif
+	#ifndef idx
+		var idx
+	#endif
+	len := strlen(#0)
+	idx := 0
+	db len
+	#while idx<len
+		dw stridx(idx, #0) | stridx(idx+1, #0) << 8
+		idx := idx +2
+	#wend
+endm
+
 
 ;<i8085 vectors>
 RESETvect	EQU 0000h
@@ -69,8 +85,12 @@ RST7_5_ISR:
 	EI
 	RET
 
+	;test for built-in stridx() method:
+	LBC "testABC"
+	LBC2 "testABC"
 
-
+	;test for warnings in built-in stridx() method:
+	LBC2 "te\128st\8ABC"
 
 
 ENTER:

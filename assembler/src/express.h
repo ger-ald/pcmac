@@ -11,18 +11,8 @@
 #include "defines.h"
 
 int expression(char *s, valtype *val, int *err, int *reloc);
-void _expression(valtype *val);
-valtype orexpression(void);
-valtype andexpression(void);
-valtype borexpression(void);
-valtype xorexpression(void);
-valtype bandexpression(void);
-valtype neoreexpression(void);
-valtype compareexpression(void);
-valtype shiftexpression(void);
-valtype addexpression(void);
-valtype multexpression(void);
-valtype tag(void);
+
+
 int isIDchar(char c);
 int isIDalpha(char c);
 valtype hex(int c);

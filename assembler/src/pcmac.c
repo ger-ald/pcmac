@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#define PCMAC_VERSION	"1.2"
+#define PCMAC_VERSION	"1.2.1"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,7 +36,7 @@
 
 #define DEBUG
 
-int checkline(char *, char *, struct set *[], char *[], int);
+static int checkline(char *, char *, struct set *[], char *[], int);
 int serch_in_set(char *, struct set *, char **, int);
 struct macro *ismacro(char *, char ***, int);
 int macrodef(void);
@@ -416,7 +416,7 @@ int main(int argc, char **argv, char **env)
  **  good for the sintax definition: 'sintax_definition'
  */
 
-int checkline(char *line, char *sintax_definition, struct set *sets[], char *member[], int k)
+static int checkline(char *line, char *sintax_definition, struct set *sets[], char *member[], int k)
 {
 	// char *line; Contains the line we want to analize.
 	// char *sintax_definition; Contains the sintax definition.
@@ -623,7 +623,7 @@ int serch_in_set(char *lexeme, struct set *set_to_search_in, char **giveback, in
 		if(!k)
 			return 0;
 		lexeme_index = expression(lexeme, &value, &err, &relocat);
-		if(err == RBRAMISSING || err == SERROR)
+		if(err == RPARENTMISSING || err == SERROR)
 			return 0;
 		if(err == UNDEFLABEL && pass == 2)
 			error("Undefined label in the expression.", NORMAL);

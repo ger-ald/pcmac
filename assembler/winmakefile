@@ -1,6 +1,6 @@
 TARGET_EXEC ?= pcmac
 
-BUILD_DIR ?= ./linuxBuild
+BUILD_DIR ?= ./windowsBuild
 SRC_DIRS ?= ./src
 
 CC = gcc
@@ -9,7 +9,7 @@ LDFLAGS = -Wl,-Bstatic -Wl,-Bdynamic
 release: CFLAGS += -Os -fdata-sections -ffunction-sections -flto
 release: LDFLAGS += -Wl,--gc-sections -flto -s
 
-SRCS := $(shell find $(SRC_DIRS) -name *.cpp -or -name *.c -or -name *.s)
+SRCS := $(shell find $(SRC_DIRS) -name "*.cpp" -or -name "*.c" -or -name "*.s")
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 

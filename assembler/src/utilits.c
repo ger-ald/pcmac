@@ -326,7 +326,7 @@ void build_up_a_var_list(int k)
 	}
 	if(symbol != IDENTIFIER)
 	{
-		sprintf(readinbuff, "%s is reserved word.", name);
+		snprintf(readinbuff, sizeof(name), "%s is reserved word.", name);
 		error(readinbuff, NORMAL);
 	}
 }/* End of function build_up_a_var_list() */

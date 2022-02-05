@@ -192,7 +192,7 @@ void dopas(void)
 
 			if(line[length_of_the_expression] && line[length_of_the_expression] != ';')
 			{
-				sprintf(name, "Unexpected characters after the expression (%s).", &(line[length_of_the_expression]));
+				snprintf(name, sizeof(name), "Unexpected characters after the expression (%s).", &(line[length_of_the_expression]));
 				error(name, NORMAL);
 			}
 			continue;
@@ -232,7 +232,7 @@ void dopas(void)
 
 			if(line[length_of_the_expression] && line[length_of_the_expression] != ';')
 			{
-				sprintf(name, "Unexpected characters after the expression (%s).", &(line[length_of_the_expression]));
+				snprintf(name, sizeof(name), "Unexpected characters after the expression (%s).", &(line[length_of_the_expression]));
 				error(name, NORMAL);
 			}
 			if(!mslast || maclist)

@@ -5,6 +5,27 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "windows build and debug",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/windowsBuild/pcmac.exe",
+			"args": ["../testfiles/i8085test.asm", "-ni8085test.bin", "-lnlist.txt", "-s", "-i../cpuDefinitions/"],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}",
+			"environment": [],
+			"externalConsole": true,
+			"MIMode": "gdb",
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			],
+			"preLaunchTask": "build pcmac",
+			"miDebuggerPath": "C:\\mingw32\\bin\\gdb.exe"
+		},
+		{
 			"name": "linux build and debug",
 			"type": "cppdbg",
 			"request": "launch",
@@ -26,7 +47,7 @@
 			"miDebuggerPath": "/usr/bin/gdb"
 		},
 		{
-			"name": "windows build and debug",
+			"name": "msvc build and debug",
 			"type": "cppvsdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/windowsBuild/pcmac.exe",
@@ -35,7 +56,7 @@
 			"cwd": "${workspaceFolder}",
 			"environment": [],
 			"externalConsole": true,
-			"preLaunchTask": "build pcmac",
-		}
+			"preLaunchTask": "msvc build pcmac",
+		},
 	]
 }

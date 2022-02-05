@@ -242,7 +242,7 @@ FILE *open_a_file_for_read(char *filename, int type)
 	}
 	if(fp)
 		return fp;
-	sprintf(name, "Unable to open the file %s.", fopenName);
+	snprintf(name, sizeof(name), "Unable to open the file %s.", fopenName);
 	error(name, FATAL);
 	return NULL;
 }/* End of function open_a_file_for_read() */

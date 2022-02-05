@@ -59,6 +59,21 @@
  *
  */
 
+
+static void _expression(valtype *val);
+static valtype orexpression(void);
+static valtype andexpression(void);
+static valtype borexpression(void);
+static valtype xorexpression(void);
+static valtype bandexpression(void);
+static valtype neoreexpression(void);
+static valtype compareexpression(void);
+static valtype shiftexpression(void);
+static valtype addexpression(void);
+static valtype multexpression(void);
+static valtype tag(void);
+
+
 /*
  * EXPRESSION EVALUATING.
  * It returns the length of the string containing the expression.
@@ -76,8 +91,7 @@ int expression( s , val , err , reloc )
 
 	errortype = 0;// No error yet.
 	first_unused_character = s;
-	while(isspace(*first_unused_character))
-		first_unused_character++;
+	SPACEAT;
 	if(*first_unused_character == '(' || *first_unused_character == '[')
 	{
 		*err = SERROR;
@@ -96,8 +110,7 @@ int expression( s , val , err , reloc )
 	return (first_character_of_the_lexeme - s);
 }
 
-//bla
-void _expression(valtype *val)
+static void _expression(valtype *val)
 {
 	int saveeval;
 	valtype value;
@@ -122,7 +135,7 @@ void _expression(valtype *val)
 }/* End of _expression() */
 
 //or
-valtype orexpression(void)
+static valtype orexpression(void)
 {
 	int saveeval;
 	valtype value;
@@ -147,7 +160,7 @@ valtype orexpression(void)
 }/* End of orexpression() */
 
 //and
-valtype andexpression(void)
+static valtype andexpression(void)
 {
 	valtype value;
 	value = borexpression();
@@ -161,7 +174,7 @@ valtype andexpression(void)
 }/* End of andexpression() */
 
 //bor
-valtype borexpression(void)
+static valtype borexpression(void)
 {
 	valtype value;
 	value = xorexpression();
@@ -175,7 +188,7 @@ valtype borexpression(void)
 }/* End of borexpression. */
 
 //xor
-valtype xorexpression(void)
+static valtype xorexpression(void)
 {
 	valtype value;
 	value = bandexpression();
@@ -189,7 +202,7 @@ valtype xorexpression(void)
 }/* End of xorexpression() */
 
 //band
-valtype bandexpression(void)
+static valtype bandexpression(void)
 {
 	valtype value;
 	value = neoreexpression();
@@ -212,7 +225,7 @@ valtype bandexpression(void)
 }/* End of bandexpression() */
 
 //neore
-valtype neoreexpression(void)
+static valtype neoreexpression(void)
 {
 	valtype value;
 	value = compareexpression();
@@ -243,7 +256,7 @@ valtype neoreexpression(void)
 }/* End of neoreexpression() */
 
 //compare
-valtype compareexpression(void)
+static valtype compareexpression(void)
 {
 	valtype value;
 	value = shiftexpression();
@@ -266,7 +279,7 @@ valtype compareexpression(void)
 }/* End of compareexpression() */
 
 //shift
-valtype shiftexpression(void)
+static valtype shiftexpression(void)
 {
 	valtype value;
 	int savereloc;
@@ -295,7 +308,7 @@ valtype shiftexpression(void)
 }/* End of compareexpression() */
 
 //add
-valtype addexpression(void)
+static valtype addexpression(void)
 {
 	valtype value;
 	value = multexpression();
@@ -322,7 +335,7 @@ valtype addexpression(void)
 }/* End of addexpression() */
 
 //multiply
-valtype multexpression(void)
+static valtype multexpression(void)
 {
 	valtype value;
 	switch(symbol)
@@ -354,25 +367,25 @@ valtype multexpression(void)
 }/* End of multexpression() */
 
 //tag
-valtype tag(void)
+static valtype tag(void)
 {
 	struct symbol *ptr;
 	valtype value;
 	switch(symbol)
 	{
-		case LBRA:
+		case LBRA: // '['
 			getsymbol();
 			_expression(&value);
 			if(symbol != RBRA)
-				errortype = RBRAMISSING;
+				errortype = RPARENTMISSING;
 			else
 				getsymbol();
 			break;
-		case LPARENT:
+		case LPARENT: // '('
 			getsymbol();
 			_expression(&value);
 			if(symbol != RPARENT)
-				errortype = RBRAMISSING;
+				errortype = RPARENTMISSING;
 			else
 				getsymbol();
 			break;
@@ -393,12 +406,12 @@ valtype tag(void)
 			break;
 		case DORELOCFUN:
 			getsymbol();
-			if(symbol != LBRA)
+			if(symbol != LPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
 			_expression(&value);
-			if(symbol != RBRA)
+			if(symbol != RPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
@@ -406,12 +419,12 @@ valtype tag(void)
 			break;
 		case POP:
 			getsymbol();
-			if(symbol != LBRA)
+			if(symbol != LPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
 			_expression(&value);
-			if(symbol != RBRA)
+			if(symbol != RPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
@@ -419,12 +432,12 @@ valtype tag(void)
 			break;
 		case TOS:
 			getsymbol();
-			if(symbol != LBRA)
+			if(symbol != LPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
 			_expression(&value);
-			if(symbol != RBRA)
+			if(symbol != RPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
@@ -432,12 +445,12 @@ valtype tag(void)
 			break;
 		case DOURELOCFUN:
 			getsymbol();
-			if(symbol != LBRA)
+			if(symbol != LPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
 			_expression(&value);
-			if(symbol != RBRA)
+			if(symbol != RPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
@@ -445,12 +458,12 @@ valtype tag(void)
 			break;
 		case ISRELOCFUN:
 			getsymbol();
-			if(symbol != LBRA)
+			if(symbol != LPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
 			_expression(&value);
-			if(symbol != RBRA)
+			if(symbol != RPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
@@ -459,14 +472,14 @@ valtype tag(void)
 			break;
 		case DEFFUN:
 			getsymbol();
-			if(symbol != LBRA)
+			if(symbol != LPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
 			if(symbol != IDENTIFIER)
 			{
 				errortype = SERROR;
-				if(symbol != RBRA)
+				if(symbol != RPARENT)
 					getsymbol();
 			}
 			else
@@ -475,13 +488,13 @@ valtype tag(void)
 				value = (ptr->type_of_the_symbol != UNDEFINED);
 				getsymbol();
 			}
-			if(symbol != RBRA)
+			if(symbol != RPARENT)
 				errortype = SERROR;
 			reloctype = FALSE;
 			break;
 		case STRLENFUN:
 			getsymbol();
-			if(symbol != LBRA)
+			if(symbol != LPARENT)
 				errortype = SERROR;
 			SPACEAT;
 			if(*first_unused_character++ != '\"')
@@ -521,7 +534,146 @@ valtype tag(void)
 			else
 				first_unused_character++;
 			getsymbol();
-			if(symbol != RBRA)
+			if(symbol != RPARENT)
+				errortype = SERROR;
+			else
+				getsymbol();
+			reloctype = FALSE;
+			break;
+		case STRIDXFUN:
+			getsymbol();
+			if (symbol != LPARENT)
+				errortype = SERROR;
+			getsymbol();
+			valtype indexToGet;
+			_expression(&indexToGet);
+
+			SPACEAT;
+			if ((symbol != COMMA) || (*first_unused_character++ != '\"'))
+			{
+				errortype = SERROR;
+				reloctype = FALSE; /* It is not interesting. */
+				break;
+			}
+			
+			// Now go trough the string to take an indexed char of
+			value = 0;
+			int currentIdx = 0;
+			int charAtIdx = 0;
+			int octalWarn;//0=no, (1<<1)=warn term. by digit, (1<<2)=non octal char
+			while(*first_unused_character && *(first_unused_character) != '\"')
+			{
+				octalWarn = 0;
+				if(*first_unused_character == '\\')
+				{
+					first_unused_character++;
+					if(!*first_unused_character)
+						break;
+					switch(*first_unused_character)
+					{
+						case 'n':
+							charAtIdx = '\n';
+							first_unused_character++;
+							break;
+						case 't':
+							charAtIdx = '\t';
+							first_unused_character++;
+							break;
+						case 'r':
+							charAtIdx = '\r';
+							first_unused_character++;
+							break;
+						case '\"':
+							charAtIdx = '\"';
+							first_unused_character++;
+							break;
+						case '8':
+						case '9':
+							if(asciiradix == 8)
+								octalWarn |= (1<<1);
+							// no break
+						case '0':
+						case '1':
+						case '2':
+						case '3':
+						case '4':
+						case '5':
+						case '6':
+						case '7':
+						{
+							int i = *(first_unused_character++) - '0';
+							if (!*first_unused_character)
+							{
+								charAtIdx = i;
+								break;
+							}
+							if (*first_unused_character < '0' || *first_unused_character > '0' + asciiradix - 1)
+							{
+								charAtIdx = i;
+								if (asciiradix == 8 && *first_unused_character > '7' &&
+										*first_unused_character <= '9')
+									octalWarn |= (1<<2);
+								break;
+							}
+							i = asciiradix * i + *(first_unused_character++) - '0';
+							if (!*first_unused_character)
+							{
+								charAtIdx = i;
+								if (asciiradix == 8 && *first_unused_character > '7' &&
+										*first_unused_character <= '9')
+									octalWarn |= (1<<2);
+								break;
+							}
+							if (*first_unused_character < '0' || *first_unused_character > '0' + asciiradix - 1)
+							{
+								charAtIdx = i;
+								if (asciiradix == 8 && *first_unused_character > '7' &&
+										*first_unused_character <= '9')
+									octalWarn |= (1<<2);
+								break;
+							}
+							i = asciiradix * i + *(first_unused_character++) - '0';
+							charAtIdx = i;
+							if (asciiradix == 8 && *first_unused_character > '7' && *first_unused_character <= '9')
+								octalWarn |= (1<<2);
+
+						}
+						break;
+
+						default:
+							charAtIdx = (*first_unused_character++);
+							break;
+					}/* End of switch */
+				}
+				else
+				{
+					charAtIdx = ((int)char_code[(int)*first_unused_character]);
+					first_unused_character++;
+				}
+				if (indexToGet == currentIdx)
+				{
+					// We got the index we need
+					value = charAtIdx;
+
+					// Warn if nessesary
+					if ((octalWarn & (1<<1)) != 0) error("Non octal character in string number.", WARNING);
+					if ((octalWarn & (1<<2)) != 0) error("Oktal number terminated by digit.", WARNING);
+
+					// Run to the end of the string
+					while(*first_unused_character && *(first_unused_character) != '\"')
+					{
+						first_unused_character++;
+					}/* End of the while */
+					break;
+				}
+				currentIdx++;
+			}/* End of the while */
+			if(*first_unused_character != '\"')
+				errortype = SERROR;
+			else
+				first_unused_character++;
+			getsymbol();
+			if(symbol != RPARENT)
 				errortype = SERROR;
 			else
 				getsymbol();
@@ -629,8 +781,8 @@ void getsymbol(void)
 		{"!=", NESYMBOL}, {">=", GESYMBOL}, {">", GTSYMBOL},
 		{"<=", LESYMBOL}, {"<", LTSYMBOL},
 		{"==", EQSYMBOL}, {"=", EQSYMBOL},
-		{"(", LBRA}, {")", RBRA},
-		{"[", LPARENT}, {"]", RPARENT},
+		{"(", LPARENT}, {")", RPARENT},
+		{"[", LBRA}, {"]", RBRA},
 		{"!", NOTSYMBOL}, {"~", NEGSYMBOL},
 		{"&", BANDSYMBOL}, {"^", BXORSYMBOL}, {"|", BORSYMBOL},
 		{"*", MULTSYMBOL}, {"/", DIVSYMBOL},
@@ -657,7 +809,7 @@ void getsymbol(void)
 	N_reswords[] = {{"OT", NOTSYMBOL},	{NULL, 0}},
 	O_reswords[] = {{"R", ORSYMBOL},	{NULL, 0}},
 	P_reswords[] = {{"UBLIC", PUBLIC},	{"OP", POP}, {"USH", PUSH}, {NULL, 0}},
-	S_reswords[] = {{"HR", SHRSYMBOL},	{"HL", SHLSYMBOL},	{"TRLEN", STRLENFUN},	{NULL, 0}},
+	S_reswords[] = {{"HR", SHRSYMBOL},	{"HL", SHLSYMBOL},	{"TRLEN", STRLENFUN},	{"TRIDX", STRIDXFUN},	{NULL, 0}},
 	T_reswords[] = {{"OS", TOS},		{NULL, 0}},
 	V_reswords[] = {{"AR", VARSYMBOL},	{NULL, 0}},
 	X_reswords[] = {{"OR", BXORSYMBOL},	{NULL, 0}},
@@ -669,8 +821,7 @@ void getsymbol(void)
 
 	first_character_of_the_lexeme = first_unused_character;
 	/* Step over the spaces. */
-	while(isspace(*first_unused_character))
-		first_unused_character++;
+	SPACEAT;
 
 	if(*first_unused_character == '\'')
 	{

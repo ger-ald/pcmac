@@ -85,7 +85,7 @@ program you should type the same line again for the DOS prompt, and
 happily read that there was no error in your  assembly  file,  and
 the compilation was successful. Now list the directory, where  you
 work, with the DOS command 'dir', and see that  there  is  a  file
-named: MYFIRST.TSK. This file contains the compiled code  of  your
+named: MYFIRST.BIN. This file contains the compiled code  of  your
 program. Try to load into your target machine and start. Well this
 is the point where we can not  give  you  any  advice  how  to  do
 because it can vary from user to user. External machines are often
@@ -187,7 +187,7 @@ instructions in details:
         DB       Abbreviation of Define Byte. The syntax  of  this
                  instruction is:
                  DB expression1,expression2,...,expressionN
-                                        or
+                                       or
                  DB string
                  The instruction generates so many bytes  as  many
                  expressions there are after the keyword DB. PCMAC
@@ -781,10 +781,10 @@ important. Let us look an example:
 ;End of the file CHARDEMO.ASM
 If you compile this program with the command line:
 PCMAC CHARDEMO.ASM
-the resulting file CHARDEMO.TSK will be an ASCII file that you can
+the resulting file CHARDEMO.BIN will be an ASCII file that you can
 type. Try to compile this assembly file,  and  then  use  the  dos
 command:
-TYPE CHARDEMO.TSK
+TYPE CHARDEMO.BIN
 You will see the following lines:
 AAA
 aaa
@@ -1871,11 +1871,19 @@ syntactically correct because PCMAC has to parse it to know  where
 it ends.
         Expressions can contain some functions. These are:
 isdef( identifier )  The result of  this  function  is  1  if  the
-                      identifier was defined and 0 otherwise.
+                     identifier was defined and 0 otherwise.
 strlen( string )     The result of this function is the length  of
                      the string. This is the number of  the  bytes
                      that would be generated if the  string  stood
                      after a DB primitive.
+stridx(i, string)    The result of this function is the value of
+                     the character at index 'i'. This  is  one  of
+                     the bytes as generated if  the  string  stood
+                     after a DB primitive.  With  'i'  as  a  zero
+                     based   index   from   the   start   of   the
+                     'DB <string>'  primitive.  If  the  index  is
+                     outside  of  the  string  then  0   will   be
+                     returned.
 pop( expression )    The value of the function is the value of the
                      top element of the stack that is  denoted  by
                      the  expression.  As  a  side   effect   this
@@ -1913,13 +1921,13 @@ PART.O.
 To generate executable code we have to link  them  together  with
 the command line:
 LINK MAIN.O PART.O
-The resulting file MAIN.TSK is executable fix code. When we  wrote
+The resulting file MAIN.BIN is executable fix code. When we  wrote
 the assembly lines PART.ASM we did not know where this part of the
 program will start in the memory. It is not a problem. You can say
 any address. PCMAC remembers  the  addresses  and  when  you  link
-programs PCMAC relocates the program automatic. The address of the
-first byte of the program PART is the length of the program  MAIN.
-PCMAC links them together.
+programs PCMAC relocates the program automaticly. The address of
+the first byte of the program PART is the length of the program
+MAIN. PCMAC links them together.
 MAIN +-----------------------+START
      |                       |
      |       MAIN            |
@@ -1933,7 +1941,7 @@ Relocation means that all the words and double words that refer to
 addresses that varies with the start of the module are  corrected.
 If we wrote an assembly program that starts at  the  address  100H
 and it is linked and gets to the location 101H then all  the  jump
-instructions and other instructions that refer to memory  location
+instructions and other instructions that refer to memory locations
 in the program will be corrected adding one to them.
         The  predefined  variable  $  has  relocatable  value.  An
 expression has relocatable value if it is a  relocatable  variable
@@ -1946,7 +1954,7 @@ relocatable, then the following expressions are all relocatable:
                          A+B-C
                          B-C+A
 The result of any other operation is nonrelocatable no matter what
-the   arguments   were.   The   exceptions   is    the    function
+the   arguments   were.   The   exception    is    the    function
 doreloc(expression) that generates always relocatable value.
         Strings
         -------
@@ -2202,22 +2210,25 @@ expression and won't find the characters '+(3)'.
         If you start PCMAC with the  command  line  that  contains
 only the name of the program, that is PCMAC if you did not  rename
 it, then PCMAC will print out the following lines:
-Macro assembler (C) Versoft Ltd. Hungary.
+
+Macro assembler V 1.2 (C)
 Usage: pcmac ['-' options ] filename
  Options:
 l list on
-ln&name listfilename+list on
-m list macro extension(+list).
-mn&name listfilename+macro listing+listing.
+ln&name listfilename + list.
+m list macro extention + list.
+mn&name listfilename + macro listing + list.
 s symbol table
 c case sensitivity
 n&outfilename
+i&includedir
 K to make library.
 o generate object.
 t don't care publics and externals.
 h generate header file.
 v version number.
-& means: write the name without any space!
+& means: write the name without any space! (or surround with '"'s)
+
 A command line that invokes PCMAC has to start with its name.  You
 can freely rename the file with the standard DOS  command  rename.
 This name tells the DOS what program to start.  The  rest  of  the
@@ -2229,7 +2240,7 @@ the assembly program. The full file name has to be written because
 PCMAC makes no default extension. If no file names present in  the
 -n option then PCMAC generates a name for the output. It cuts  off
 the extension of the name of the input file and adds the extension
-.o if generates object file or .tsk if generates task file or  the
+.o if generates object file or .bin if generates task file or  the
 extension .lib if the option -K was given or the extension  .h  if
 the option -h was given. If the extension of the input file is  .o
 and the option -o was given then  PCMAC  gives  the  .q  extension
@@ -2266,6 +2277,13 @@ c case sensitivity
 n&outfilename
         You can use this option to specify the name of the file to
         be generated.
+i&includedirname
+        You can use this option to specify a directory  that  will
+        also be searched when you include/lib/macro a  file.  This
+        can be used to avoid duplicates of macrofiles when you use
+        them in multiple projects. (for example by having all  cpu
+        macro files in the include directory instead of duplicates
+        in each project's directory)
 K to make library.
         You can use this option to generate a macro library  file.
         Such a file usually has the  extension  .lib  and  can  be
@@ -2304,7 +2322,7 @@ v version number.
         versions of  the  assembler,  these  copies  do  not  work
         properly and there is no guarantee that such a  copy  will
         not damage your files or hardware. If you have such a copy
-        connect the firm ???????????????????.
+        contact the firm ???????????????????.
         The Linker
         ----------
         The linker is a separated program that  links  the  object
@@ -2315,7 +2333,7 @@ If no argument  is  given  then  the  linker  prints  out  a  sort
 remainder about its usage:
 Usage: link [options] input_file_name_list
 Options: -B[x]nnnn base address. (if x then in hex.)
-n&name change default (a.tsk) outfilename
+n&name change default (a.bin) outfilename
 w reverse word order.
 d reverse long word order.
 The & means: write the name without space.
@@ -2337,20 +2355,20 @@ that your program will start on the address you specified with the
 option -B. This option must contain  a  number.  If  you  have  an
 object file named MYFIRST.o then using the command line:
 link MYFIRST.o -B32000
-will generate a task file called a.tsk that contains code that you
+will generate a task file called a.bin that contains code that you
 can load into your target machine to the address  32000.  You  can
 specify the base address in hexadecimal form. In such a  case  you
 have to use the option -Bx. So the command line:
 link MYFIRST.o -Bx7d00
 has the same effect as the previous one.
         The linker has to know how to  treat  the  words  and  the
-double words. If the the words contain the bytes in normal  order,
-that is lower address lower significant byte, then you should  not
-use the -w option. This option says that  the  words  have  to  be
-dealt with in reverse order. This is the case for the code of  the
+double words. If the words contain the bytes in normal order, that
+is lower address lower significant byte, then you should  not  use
+the -w option. This option says that the words have  to  be  dealt
+with in reverse order. This is  the  case  for  the  code  of  the
 MOTOROLA processors. The option -d  says  that  the  double  words
 contain the words in reverse order.
-        The default file name for the generated code is a.tsk.  If
+        The default file name for the generated code is a.bin.  If
 you want to change this then you have to use the  -n  option.  You
 can use it the same way as the option -n of the assembler PCMAC.
         The Format of the Object Code
@@ -2369,7 +2387,7 @@ end of the file. This feature is NOT declared  and  later  can  be
 changed.
         The format of the PCMAC object code is  different  to  the
 standard Microsoft object format. This is because:
-1.) When the development of PCMAC stated  the  developers  had  no
+1.) When the development of PCMAC started the  developers  had  no
     information on that format.
 2.) The Microsoft object format is too sophisticated.  Using  that
     format would have caused a slower assembler and linker.
@@ -2420,12 +2438,12 @@ some comment on their contents.
     of the symbol.
  84  EXTDEF name \0 2IDTFNUM
       These blocks define an external symbol. The body starts with
-    the the name of the  external  symbol.  The  name  has  to  be
-    shorter than 100 bytes and must be terminated by a zero  byte.
-    The last two bytes of the block body contain  the  identifying
-    number of the symbol. This identifying number is used  in  the
-    blocks EXTREF. Such an identifying number is unique within one
-    object file. Different object  files  for  different  external
+    the name of the external symbol. The name has  to  be  shorter
+    than 100 bytes and must be terminated by a zero byte. The last
+    two bytes of the block body contain the identifying number  of
+	the symbol. This identifying number  is  used  in  the  blocks
+    EXTREF. Such an identifying number is unique within one object
+	file.  Different   object   files   for   different   external
     identifiers can have the same identifying number and different
     object  files  for  the  same  external  identifier  can  have
     different identifying number.
@@ -2435,7 +2453,7 @@ some comment on their contents.
     code that have to be filled up with the values of  the  global
     symbols. The first byte contains the number of  the  items  of
     the block. Every item is seven bytes long. The first two bytes
-    contain the identifying number that has to  be  defined  in  a
+    contain the identifying number that has to be  defined  in  an
     EXTDEF block. The next byte is the type of the location  where
     the address points to. This byte can be:
     01          The value has to fit into a byte.
@@ -2598,7 +2616,7 @@ the line that contains that directive or used two different #endif
 directives for the same #if??? directive.
 N   Empty syntax definition
   You specified an empty string as syntax definition of  a  macro.
-This macro definition can not be matched by any  line,  so  such  a
+This macro definition can not be matched by any line,  so  such  a
 macro definition is out of use. Do not do it.
 F   End of memory!
   Well, this error is a very unconfortable one. You get  an  error
@@ -2615,7 +2633,7 @@ have to terminate it with > and if you opened a file name  with  "
 then you have to close it with ".
 N   Expression must be predefined
   The expression standing on the right hand side of an command  :=
-or equ is not evaluateable.  This  is  because  some  label  is  not
+or equ is not evaluateable. This is  because  some  label  is  not
 defined yet. An expression like that has to be evaluatable.
 N   External can not be public
   You declared a label as public and as external. It is no use and
@@ -2629,7 +2647,7 @@ N   External with no -o option
 N   Public with no -o option
   You tried to compile a program that  contains  external  labels.
 This is a mistake. You probably forgot to use the  option  -o.  If
-you really want to generate a tsk file immediately then use the -t
+you really want to generate a bin file immediately then use the -t
 option, but be sure that all the external labels get value.
 N   Identifier expected after public
   There must be one or more identifiers  following  the    keyword
@@ -2750,12 +2768,6 @@ is no way to check if a stack is empty.
 N   Public symbol was not defined
   You declared a variable as public but it got no value during the
 passes.
-N   External with no -o option
-N   Public with no -o option
-  You tried to compile a program that  contains  external  labels.
-This is a mistake. You probably forgot to use the  option  -o.  If
-you really want to generate a tsk file immediately then use the -t
-option, but be sure that all the external labels get value.
 N   Redefining a label
 N   Redefining a symbol
 N   Redefining an identifier
@@ -2892,3 +2904,13 @@ N   " missing after the 'error' directive
 N   " missing after the 'fatal' directive
   The directives #message, #warning, #error and #fatal has  to  be
 followed with a string.
+
+
+Changelog:
+2022-02-05: pcmac add function stridx(i,string) to  get  one  char
+    out of a string.
+2021-02-27: pcmac add argument to for include directory and change
+    file default to *.bin (was *.tsk)
+
+
+
