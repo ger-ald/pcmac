@@ -40,6 +40,8 @@ static int checkline(char *, char *, struct set *[], char *[], int);
 int serch_in_set(char *, struct set *, char **, int);
 struct macro *ismacro(char *, char ***, int);
 int macrodef(void);
+void setFileExtension(char *fileNameBuffer, int fileNameBufferLength, const char *extention);
+const char *getFileExtension(const char *fileNameBuffer, int fileNameBufferLength);
 void write_version(void);
 
 int main(int argc, char **argv, char **env)
@@ -62,6 +64,7 @@ int main(int argc, char **argv, char **env)
 	 * set the default values
 	 */
 	outfilnam = NULL;
+	outfilnamBuffLen = 0;
 	original_name = "pcmac.asm";
 	casesen = 1;
 	glistswitch = 0;
@@ -188,7 +191,24 @@ int main(int argc, char **argv, char **env)
 					}
 					break;
 				case 'n':	//outfilename
-					outfilnam = &((*argv)[2]);
+					if(NULL != outfilnam)
+					{
+						//A filename has been given before
+						free(outfilnam);
+					}
+
+					i = strnlen(&((*argv)[2]), MAXLINLEN);
+					outfilnamBuffLen = i + 4;
+					outfilnam = (char *)malloc(outfilnamBuffLen);
+					if(!outfilnam)
+					{
+						outfilnamBuffLen = 0;
+						error("End of memory!", FATAL);
+					}
+					else
+					{
+						strncpy(outfilnam, &((*argv)[2]), outfilnamBuffLen);
+					}
 					break;
 				case 'i':	//includedir
 					//include dir arg overrides the env include
@@ -217,53 +237,84 @@ int main(int argc, char **argv, char **env)
 		}
 		else
 		{
-			int register post;
 			original_name = *argv;
-			strcpy(name, *argv);
-			for(i = 0; i < (MAXLINLEN-2) && name[i] && name[i] != '.'; i++);
+			strncpy(name, original_name, sizeof(name));
+			int nameLen = strnlen(name, sizeof(name));
 
-			if(name[i] == '.' && name[i + 0] == 'o' && !name[i+2])
+			if(nameLen >= sizeof(name) - 10)
 			{
-				post = 'O';
-				error("Input file name : *.o", WARNING);
-			}
-			else
-				post = 'o';
-			if((!name[i] || name[i] == '.') && i < MAXLINLEN - 10)
-			{
-				name[i++] = '.';
-				name[i++] = post;
-				name[i] = '\0';
-			}
-			else
+				//Name to long
 				error("Too long file name.\n", FATAL);
-			if(!outfilnam)
-				outfilnam = (char *)malloc(i + 3);
-			if(!outfilnam)
-				error("End of memory!", FATAL);
-			strcpy(outfilnam, name);
+			}
+			else
+			{
+				//name has at least 10 chars free behind it
+
+				const char *startOfExt = getFileExtension(name, sizeof(name));
+				if(NULL == startOfExt)
+				{
+					//No extention
+				}
+				else
+				{
+					//name has a file extention
+
+					if(startOfExt[0] == '.' && startOfExt[1] == 'o' && !startOfExt[2])
+					{
+						setFileExtension(name, sizeof(name), ".O");//use capital so we don't overwrite the original file
+						error("Input file name : *.o", WARNING);
+					}
+					else
+						setFileExtension(name, sizeof(name), ".o");
+				}
+
+				if(!outfilnam)
+				{
+					//No output filename was given (yet)
+					outfilnamBuffLen = nameLen + 4;
+					outfilnam = (char *)malloc(outfilnamBuffLen);
+					if(!outfilnam)
+					{
+						outfilnamBuffLen = 0;
+						error("End of memory!", FATAL);
+					}
+					else
+					{
+						strncpy(outfilnam, name, outfilnamBuffLen);
+					}
+				}
+			}
 		}
 	}
 
 	if(!outfilnam)
-		outfilnam = "pcmac.o\0  ";
-	if(!objgen)
 	{
-		for(i = 0; outfilnam[i] != '.'; i++)
-			;
-		strcpy(&(outfilnam[i]), ".bin");
+		//No output filename was given
+		const char *defaultName = "pcmac.o  ";
+		outfilnamBuffLen = strlen(defaultName);
+		outfilnam = (char *)malloc(outfilnamBuffLen);
+		if(!outfilnam)
+		{
+			outfilnamBuffLen = 0;
+			error("End of memory!", FATAL);
+		}
+		else
+		{
+			strncpy(outfilnam, defaultName, outfilnamBuffLen);
+		}
 	}
+
 	if(libraryswitch)
 	{
-		for(i = 0; outfilnam[i] != '.'; i++)
-			;
-		strcpy(&(outfilnam[i]), ".lib");
+		setFileExtension(outfilnam, outfilnamBuffLen, ".lib");
 	}
 	else if(headswitch)
 	{
-		for(i = 0; outfilnam[i] != '.'; i++)
-			;
-		strcpy(&(outfilnam[i]), ".h");
+		setFileExtension(outfilnam, outfilnamBuffLen, ".h");
+	}
+	else if(!objgen)
+	{
+		setFileExtension(outfilnam, outfilnamBuffLen, ".bin");
 	}
 
 	if(objgen && tskswitch)
@@ -1010,6 +1061,30 @@ int macrodef(void)
 	return 0;
 }/* End of macrodef() */
 
+/* This function changes the file extension or adds one if not present. */
+void setFileExtension(char *fileNameBuffer, int fileNameBufferLength, const char *extention)
+{
+	int i;
+
+	int endOfName = strnlen(fileNameBuffer, fileNameBufferLength);
+	for(i = endOfName; (i >= 0) && (fileNameBuffer[i] != '.'); i--)
+		;
+	if (i == 0)
+		i = endOfName;// No extention or no name at all
+	strncpy(&(fileNameBuffer[i]), extention, fileNameBufferLength - i);
+}
+
+/* This function gets the pointer to where the file extension begins or NULL if not present. */
+const char *getFileExtension(const char *fileNameBuffer, int fileNameBufferLength)
+{
+	int endOfName = strnlen(fileNameBuffer, fileNameBufferLength);
+	int i;
+
+	for(i = endOfName; (i >= 0) && (fileNameBuffer[i] != '.'); i--)
+		;
+	
+	return (i >= 0) ? (fileNameBuffer + i) : NULL;
+}
 
 /* This function writes the licence. */
 void write_version(void)
