@@ -1,0 +1,6 @@
+/assembler/windowsBuild/*
+/assembler/linuxBuild/*
+
+/assembler/list.txt
+/assembler/test.lib
+/assembler/test.bin

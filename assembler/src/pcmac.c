@@ -64,7 +64,7 @@ int main(int argc, char **argv, char **env)
 	 * set the default values
 	 */
 	outfilnam = NULL;
-	outfilnamBuffLen = 0;
+	outfilnamBuffSize = 0;
 	original_name = "pcmac.asm";
 	casesen = 1;
 	glistswitch = 0;
@@ -101,6 +101,7 @@ int main(int argc, char **argv, char **env)
 		fprintf(stderr, "\n& means: write the name without any space! (or surround with '\"'s)\n");
 		exit(1);
 	}
+
 	/* We search the default enviroment. */
 	while(*env)
 	{
@@ -197,17 +198,17 @@ int main(int argc, char **argv, char **env)
 						free(outfilnam);
 					}
 
-					i = strnlen(&((*argv)[2]), MAXLINLEN);
-					outfilnamBuffLen = i + 4;
-					outfilnam = (char *)malloc(outfilnamBuffLen);
+					i = strnlen(&((*argv)[2]), MAXLINLEN - 1);
+					outfilnamBuffSize = i + 4;
+					outfilnam = (char *)malloc(outfilnamBuffSize);
 					if(!outfilnam)
 					{
-						outfilnamBuffLen = 0;
+						outfilnamBuffSize = 0;
 						error("End of memory!", FATAL);
 					}
 					else
 					{
-						strncpy(outfilnam, &((*argv)[2]), outfilnamBuffLen);
+						strcpy(outfilnam, &((*argv)[2]));
 					}
 					break;
 				case 'i':	//includedir
@@ -238,8 +239,7 @@ int main(int argc, char **argv, char **env)
 		else
 		{
 			original_name = *argv;
-			strncpy(name, original_name, sizeof(name));
-			int nameLen = strnlen(name, sizeof(name));
+			int nameLen = strnlen(original_name, sizeof(name));
 
 			if(nameLen >= sizeof(name) - 10)
 			{
@@ -249,6 +249,9 @@ int main(int argc, char **argv, char **env)
 			else
 			{
 				//name has at least 10 chars free behind it
+
+				//length was checked so copy
+				strcpy(name, original_name);
 
 				const char *startOfExt = getFileExtension(name, sizeof(name));
 				if(NULL == startOfExt)
@@ -271,16 +274,16 @@ int main(int argc, char **argv, char **env)
 				if(!outfilnam)
 				{
 					//No output filename was given (yet)
-					outfilnamBuffLen = nameLen + 4;
-					outfilnam = (char *)malloc(outfilnamBuffLen);
+					outfilnamBuffSize = nameLen + 4;
+					outfilnam = (char *)malloc(outfilnamBuffSize);
 					if(!outfilnam)
 					{
-						outfilnamBuffLen = 0;
+						outfilnamBuffSize = 0;
 						error("End of memory!", FATAL);
 					}
 					else
 					{
-						strncpy(outfilnam, name, outfilnamBuffLen);
+						strcpy(outfilnam, name);
 					}
 				}
 			}
@@ -291,30 +294,30 @@ int main(int argc, char **argv, char **env)
 	{
 		//No output filename was given
 		const char *defaultName = "pcmac.o  ";
-		outfilnamBuffLen = strlen(defaultName);
-		outfilnam = (char *)malloc(outfilnamBuffLen);
+		outfilnamBuffSize = strlen(defaultName) + 1;
+		outfilnam = (char *)malloc(outfilnamBuffSize);
 		if(!outfilnam)
 		{
-			outfilnamBuffLen = 0;
+			outfilnamBuffSize = 0;
 			error("End of memory!", FATAL);
 		}
 		else
 		{
-			strncpy(outfilnam, defaultName, outfilnamBuffLen);
+			strcpy(outfilnam, defaultName);
 		}
 	}
 
 	if(libraryswitch)
 	{
-		setFileExtension(outfilnam, outfilnamBuffLen, ".lib");
+		setFileExtension(outfilnam, outfilnamBuffSize, ".lib");
 	}
 	else if(headswitch)
 	{
-		setFileExtension(outfilnam, outfilnamBuffLen, ".h");
+		setFileExtension(outfilnam, outfilnamBuffSize, ".h");
 	}
 	else if(!objgen)
 	{
-		setFileExtension(outfilnam, outfilnamBuffLen, ".bin");
+		setFileExtension(outfilnam, outfilnamBuffSize, ".bin");
 	}
 
 	if(objgen && tskswitch)
@@ -1062,24 +1065,37 @@ int macrodef(void)
 }/* End of macrodef() */
 
 /* This function changes the file extension or adds one if not present. */
-void setFileExtension(char *fileNameBuffer, int fileNameBufferLength, const char *extention)
+void setFileExtension(char *fileNameBuffer, int fileNameBufferSize, const char *extention)
 {
 	int i;
 
-	int endOfName = strnlen(fileNameBuffer, fileNameBufferLength);
+	if (fileNameBufferSize <= 0) return;
+	fileNameBufferSize--;//size to max index
+
+	int endOfName = strnlen(fileNameBuffer, fileNameBufferSize);
 	for(i = endOfName; (i >= 0) && (fileNameBuffer[i] != '.'); i--)
 		;
-	if (i == 0)
+	if (i < 0)
 		i = endOfName;// No extention or no name at all
-	strncpy(&(fileNameBuffer[i]), extention, fileNameBufferLength - i);
+
+	//now copy extention after the filename:
+	int extLen = strlen(extention) + 1;//also copy the '\0'
+	for(int j = 0; j < extLen; j++)
+	{
+		fileNameBuffer[i] = extention[j];
+		if (i < fileNameBufferSize) i++;//this ensures that the string ends with the '\0' of the extention string
+	}
 }
 
 /* This function gets the pointer to where the file extension begins or NULL if not present. */
-const char *getFileExtension(const char *fileNameBuffer, int fileNameBufferLength)
+const char *getFileExtension(const char *fileNameBuffer, int fileNameBufferSize)
 {
-	int endOfName = strnlen(fileNameBuffer, fileNameBufferLength);
 	int i;
 
+	if (fileNameBufferSize <= 0) return NULL;
+	fileNameBufferSize--;//size to max index
+
+	int endOfName = strnlen(fileNameBuffer, fileNameBufferSize);
 	for(i = endOfName; (i >= 0) && (fileNameBuffer[i] != '.'); i--)
 		;
 	

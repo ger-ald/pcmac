@@ -131,7 +131,7 @@ int setnumbering;
 /* A global pointer containing the file name of the output file. */
 char *outfilnam;
 /* A global variable containing the file name length of the output file. */
-int outfilnamBuffLen;
+int outfilnamBuffSize;
 /* It is zero while there was no byte generated. */
 int first_flag;
 /* These pointers point to the symbol table
