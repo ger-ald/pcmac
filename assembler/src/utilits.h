@@ -17,7 +17,6 @@ void extend_line(char *line, char **setstrings);
 void build_up_a_var_list(int k);
 void build_up_a_set(void);
 void check_sharps(char *s, int limit);
-char *strccchr(char *s, char c1, char c2);
 char *compress(char *s);
 int newstack(void);
 void releasestack(int k);

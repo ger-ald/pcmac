@@ -28,6 +28,8 @@
 #include "tfunc.h"
 #include "utilits.h"
 
+static void getint(int *a);
+
 /*
  * This program reads a macro library from the file libfile.
  *
@@ -282,7 +284,7 @@ void read_library(void)
  * The stop character is ungetch'ed back to the file.
  *
  */
-void getint(int *a)
+static void getint(int *a)
 {
 	int c;
 	c = getc(libfile);

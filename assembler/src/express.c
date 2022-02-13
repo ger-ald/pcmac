@@ -73,6 +73,11 @@ static valtype addexpression(void);
 static valtype multexpression(void);
 static valtype tag(void);
 
+static valtype hex(int c);
+static valtype bin(int c);
+static valtype okt(int c);
+static valtype dec(int c);
+
 
 /*
  * EXPRESSION EVALUATING.
@@ -92,7 +97,7 @@ int expression( s , val , err , reloc )
 	errortype = 0;// No error yet.
 	first_unused_character = s;
 	SPACEAT;
-	if(*first_unused_character == '(' || *first_unused_character == '[')
+	if(*first_unused_character == '[')
 	{
 		*err = SERROR;
 		*reloc = 0;
@@ -686,25 +691,8 @@ static valtype tag(void)
 	return value;
 }/* End of tag() */
 
-/*
- ** return TRUE if c is a valid character for an identifier
- */
-int isIDchar(char c)
-{
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_') || (c == '$')
-			|| (c == '@');
-}
-
-/*
- ** return TRUE if c is valid for the first character of an identifier
- */
-int isIDalpha(char c)
-{
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_') || (c == '$') || (c == '@');
-}
-
 /* Returns the value of a hexadecimal digit. */
-valtype hex(int c)
+static valtype hex(int c)
 {
 	int i;
 	i = 0;
@@ -722,7 +710,7 @@ valtype hex(int c)
 }
 
 /* Returns the value of a binary digit. */
-valtype bin(int c)
+static valtype bin(int c)
 {
 	if(c == '0')
 		return 0;
@@ -733,7 +721,7 @@ valtype bin(int c)
 }
 
 /* Returns the value of an oktal digit. */
-valtype okt(int c)
+static valtype okt(int c)
 {
 	int i;
 	i = 0;
@@ -746,7 +734,7 @@ valtype okt(int c)
 }
 
 /* Returns the value of a decimal digit. */
-valtype dec(int c)
+static valtype dec(int c)
 {
 	if(c > '9' || c < '0')
 	{
@@ -754,6 +742,26 @@ valtype dec(int c)
 		return 0;
 	}
 	return c - '0';
+}
+
+
+
+
+/*
+ ** return TRUE if c is a valid character for an identifier
+ */
+int isIDchar(char c)
+{
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_') || (c == '$')
+			|| (c == '@');
+}
+
+/*
+ ** return TRUE if c is valid for the first character of an identifier
+ */
+int isIDalpha(char c)
+{
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_') || (c == '$') || (c == '@');
 }
 
 /*
@@ -928,7 +936,7 @@ void getsymbol(void)
 			return;
 		}
 		/* Look it up in the table. */
-		/* Not the reserwed words!  */
+		/* Not the reserved words!  */
 		for(i = 0; lexemes[i].lexeme; i++)
 		{
 			for(j = 0; lexemes[i].lexeme[j]; j++)

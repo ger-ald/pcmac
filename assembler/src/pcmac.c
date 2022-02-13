@@ -37,12 +37,12 @@
 #define DEBUG
 
 static int checkline(char *, char *, struct set *[], char *[], int);
-int serch_in_set(char *, struct set *, char **, int);
+static int serch_in_set(char *, struct set *, char **, int);
 struct macro *ismacro(char *, char ***, int);
 int macrodef(void);
-void setFileExtension(char *fileNameBuffer, int fileNameBufferLength, const char *extention);
-const char *getFileExtension(const char *fileNameBuffer, int fileNameBufferLength);
-void write_version(void);
+static void setFileExtension(char *fileNameBuffer, int fileNameBufferLength, const char *extention);
+static const char *getFileExtension(const char *fileNameBuffer, int fileNameBufferLength);
+static void write_version(void);
 
 int main(int argc, char **argv, char **env)
 {
@@ -578,7 +578,7 @@ static int checkline(char *line, char *sintax_definition, struct set *sets[], ch
  **
  */
 
-int serch_in_set(char *lexeme, struct set *set_to_search_in, char **giveback, int k)
+static int serch_in_set(char *lexeme, struct set *set_to_search_in, char **giveback, int k)
 {
 	/* The lexeme we have to search in the set. */
 	// char *lexeme;
@@ -1065,7 +1065,7 @@ int macrodef(void)
 }/* End of macrodef() */
 
 /* This function changes the file extension or adds one if not present. */
-void setFileExtension(char *fileNameBuffer, int fileNameBufferSize, const char *extention)
+static void setFileExtension(char *fileNameBuffer, int fileNameBufferSize, const char *extention)
 {
 	int i;
 
@@ -1088,7 +1088,7 @@ void setFileExtension(char *fileNameBuffer, int fileNameBufferSize, const char *
 }
 
 /* This function gets the pointer to where the file extension begins or NULL if not present. */
-const char *getFileExtension(const char *fileNameBuffer, int fileNameBufferSize)
+static const char *getFileExtension(const char *fileNameBuffer, int fileNameBufferSize)
 {
 	int i;
 
@@ -1103,7 +1103,7 @@ const char *getFileExtension(const char *fileNameBuffer, int fileNameBufferSize)
 }
 
 /* This function writes the licence. */
-void write_version(void)
+static void write_version(void)
 {
 	fprintf(stderr, "PCMAC macro assembler - 1987\n");
 	fprintf(stderr, "release Version " PCMAC_VERSION "\n");

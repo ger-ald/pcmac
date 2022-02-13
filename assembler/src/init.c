@@ -28,10 +28,14 @@
 #include "tfunc.h"
 #include "utilits.h"
 
+static void init_symbol_table(void);;
+static void init_file_system(void);
+
+
 /*
  * INITIALISES THE SYMBOL TABLE
  */
-void init_symbol_table(void)
+static void init_symbol_table(void)
 {
 	int i;
 	struct symbol *ptr;
@@ -149,6 +153,12 @@ void init_symbol_table(void)
 
 }
 
+static void init_file_system(void)
+{
+	/* We are on the highest level of macro nesting. */
+	mslast = NULL;
+}
+
 void init_input_system(void)
 {
 	int i;
@@ -174,12 +184,6 @@ void init_assembly_system(void)
 	loopstacklast = NULL;
 	*listline = '\0';
 	Nrofthesets = 4;
-}
-
-void init_file_system(void)
-{
-	/* We are on the highest level of macro nesting. */
-	mslast = NULL;
 }
 
 void initolo(void)

@@ -15,10 +15,6 @@ int expression(char *s, valtype *val, int *err, int *reloc);
 
 int isIDchar(char c);
 int isIDalpha(char c);
-valtype hex(int c);
-valtype bin(int c);
-valtype okt(int c);
-valtype dec(int c);
 void getsymbol(void);
 
 

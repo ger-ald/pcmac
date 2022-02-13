@@ -24,6 +24,13 @@
 #include "tfunc.h"
 #include "utilits.h"
 
+static int hashpjw(char *s);
+static void list_tree(struct symbol *j);
+static void write_tree(struct symbol *j);
+
+
+
+
 /*
  ** HASH function
  **
@@ -40,7 +47,7 @@
  ** either, but the redefinition of it is identical. )
  */
 #define PRIME 211
-int hashpjw(char *s)
+static int hashpjw(char *s)
 {
 	char *p;
 	unsigned long h = 0, g;
@@ -174,6 +181,11 @@ struct symbol *search_in_the_table(char *s)
 }
 //#undef __FUNC__
 
+/*
+ * Write symbol table to list file
+ *
+ * creates a listing of labels and variables in the symboltable (-s)
+**/
 void listsymbols(void)
 {
 	int i;
@@ -182,7 +194,7 @@ void listsymbols(void)
 	for(i = 0; i < PRIME; i++) /* Go thru the hash table. */
 		list_tree(hashtable[i]);
 }
-void list_tree(struct symbol *j)
+static void list_tree(struct symbol *j)
 {
 	if(j == NULL)
 		return;
@@ -198,15 +210,24 @@ void list_tree(struct symbol *j)
 			break;
 	}
 	switch(j->type_of_the_symbol)
+	{
 		case LABEL:
 		case VARIABLE:
 		{
-			fprintf(listfile, "%20s %cR ", j->name_of_the_symbol, j->relocatable ? ' ' : 'N');
+			fprintf(listfile, "%32s %cR ", j->name_of_the_symbol, j->relocatable ? ' ' : 'N');
 			fprintf(listfile, "%08lX\n", j->value_of_the_symbol);
 		}
-	}/* End of the function list_tree() */
+	}
+}/* End of the function list_tree() */
+
+
 
 static FILE *fp;
+/*
+ * Write header file
+ *
+ * creates the file for the create header option (-h)
+**/
 void write_header(void)
 {
 	int i;
@@ -217,7 +238,7 @@ void write_header(void)
 
 	fclose(fp);
 }
-void write_tree(struct symbol *j)
+static void write_tree(struct symbol *j)
 {
 	if(j == NULL)
 		return;

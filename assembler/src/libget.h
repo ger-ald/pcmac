@@ -9,6 +9,5 @@
 #define LIBGET_H_
 
 void read_library(void);
-void getint(int *a);
 
 #endif /* LIBGET_H_ */

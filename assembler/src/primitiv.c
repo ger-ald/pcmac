@@ -31,6 +31,40 @@
 #include "tfunc.h"
 #include "utilits.h"
 
+
+static void func_error(void);
+static void func_warning(void);
+static void func_fatal(void);
+static void func_message(void);
+static void func_pause(void);
+static void func_if(void);
+static void func_endif(void);
+static void func_else(void);
+static void elsi_func(void);
+static void ifde_func(void);
+static void func_stack(void);
+static void ifnde_func(void);
+static void func_while(void);
+static void func_wend(void);
+static void func_repeat(void);
+static void func_until(void);
+static void func_lib(void);
+static void func_octal(void);
+static void func_decimal(void);
+static void func_dw(void);
+static void func_dd(void);
+static void func_macnum(void);
+static void func_char(void);
+static void func_macarg(void);
+static void func_pop(void);
+static void func_push(void);
+static void func_clostak(void);
+static void func_list(void);
+static void func_ilist(void);
+static void func_direc(void);
+static void errorcheck(int err);
+static void func_def_byte(void);
+
 /* These variables were moved out the function do_primitive, because
  * TURBO C++ could not compile it (out of memory.)
  *  04-16-93
@@ -44,7 +78,7 @@ static struct symbol *symptr;
 static FILE *charfile;
 
 
-void func_error(void)
+static void func_error(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -70,7 +104,7 @@ void func_error(void)
 		}
 	}
 }
-void func_warning(void)
+static void func_warning(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -96,7 +130,7 @@ void func_warning(void)
 		}
 	}
 }
-void func_fatal(void)
+static void func_fatal(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -122,7 +156,7 @@ void func_fatal(void)
 		}
 	}
 }
-void func_message(void)
+static void func_message(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -148,14 +182,14 @@ void func_message(void)
 		}
 	}
 }
-void func_pause(void)
+static void func_pause(void)
 {
 	if( !fly_over_the_lines )
 	{
 		system("pause");
 	}
 }
-void func_if(void)
+static void func_if(void)
 {
 	while( isalpha( *s ) ) s++;
 	s += expression(s, &value, &err, &reloc);
@@ -192,7 +226,7 @@ void func_if(void)
 		error(name, NORMAL);
 	}
 }
-void func_endif(void)
+static void func_endif(void)
 {
 	while( isalpha( *s ) ) s++;
 	if(fly_over_the_lines)
@@ -209,7 +243,7 @@ void func_endif(void)
 		}
 	}
 }
-void func_else(void)
+static void func_else(void)
 {
 	while( isalpha( *s ) ) s++;
 	if(fly_over_the_lines)
@@ -226,7 +260,7 @@ void func_else(void)
 		fly_over_the_lines = 1;
 	}
 }
-void elsi_func(void)
+static void elsi_func(void)
 {
 	if(fly_over_the_lines)
 	{
@@ -268,7 +302,7 @@ void elsi_func(void)
 		error(name, NORMAL);
 	}
 }
-void ifde_func(void)
+static void ifde_func(void)
 {
 	while( isalpha( *s ) ) s++;
 	first_unused_character = s;
@@ -306,7 +340,7 @@ void ifde_func(void)
 		error(name, NORMAL);
 	}
 }
-void func_stack(void)
+static void func_stack(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -338,7 +372,7 @@ void func_stack(void)
 			error("No more stacks.", FATAL);
 	}
 }
-void ifnde_func(void)
+static void ifnde_func(void)
 {
 	while( isalpha( *s ) ) s++;
 	first_unused_character = s;
@@ -376,7 +410,7 @@ void ifnde_func(void)
 		error(name, NORMAL);
 	}
 }
-void func_while(void)
+static void func_while(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -438,7 +472,7 @@ void func_while(void)
 		}
 	}
 }
-void func_wend(void)
+static void func_wend(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -460,7 +494,7 @@ void func_wend(void)
 		}
 	}
 }
-void func_repeat(void)
+static void func_repeat(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -479,7 +513,7 @@ void func_repeat(void)
 		}
 	}
 }
-void func_until(void)
+static void func_until(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -507,7 +541,7 @@ void func_until(void)
 		}
 	}
 }
-void func_lib(void)
+static void func_lib(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -521,7 +555,7 @@ void func_lib(void)
 		}
 	}
 }
-void func_octal(void)
+static void func_octal(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -536,7 +570,7 @@ void func_octal(void)
 		asciiradix = 8;
 	}
 }
-void func_decimal(void)
+static void func_decimal(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -551,7 +585,7 @@ void func_decimal(void)
 		asciiradix = 10;
 	}
 }
-void func_dw(void)
+static void func_dw(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -566,7 +600,7 @@ void func_dw(void)
 			error("Unknown byte order in the #dw directive.", NORMAL);
 	}
 }
-void func_dd(void)
+static void func_dd(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -581,7 +615,7 @@ void func_dd(void)
 			error("Unknown word order in the #dd directive.", NORMAL);
 	}
 }
-void func_macnum(void)
+static void func_macnum(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -597,7 +631,7 @@ void func_macnum(void)
 			macnum = value;
 	}
 }
-void func_char(void)
+static void func_char(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -675,7 +709,7 @@ void func_char(void)
 		}
 	}
 }
-void func_macarg(void)
+static void func_macarg(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -691,7 +725,7 @@ void func_macarg(void)
 			macarg = value;
 	}
 }
-void func_pop(void)
+static void func_pop(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -705,7 +739,7 @@ void func_pop(void)
 			usrpop((int)value);
 	}
 }
-void func_push(void)
+static void func_push(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -728,7 +762,7 @@ void func_push(void)
 		}
 	}
 }
-void func_clostak(void)
+static void func_clostak(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -741,7 +775,7 @@ void func_clostak(void)
 		releasestack(value);
 	}
 }
-void func_list(void)
+static void func_list(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -757,7 +791,7 @@ void func_list(void)
 			(mlistswitch = 0), (listswitch = 0);
 	}
 }
-void func_ilist(void)
+static void func_ilist(void)
 {
 	if( !fly_over_the_lines )
 	{
@@ -775,7 +809,7 @@ void func_ilist(void)
 }
 //#undef STEP
 //#undef CONON
-void func_direc(void)
+static void func_direc(void)
 {
 	s++; /* Step over the sharp character. */
 	while(isspace(*s))
@@ -910,7 +944,28 @@ void func_direc(void)
 	}
 }
 
-void func_def_byte(void)
+static void errorcheck(int err)
+{
+	switch(err)
+	{
+		case 0:
+			return; // No error.
+		case RPARENTMISSING:
+		case SERROR:
+			error("Syntax error in the expression.", NORMAL);
+			break;
+		case UNDEFLABEL:
+			error("Undefined label in the expression.", NORMAL);
+			break;
+		case EXTIDTF:
+			error("External identifier in the expression.", NORMAL);
+			break;
+		default:
+			error("016 Internal error.", INTERNAL);
+	}
+}
+
+static void func_def_byte(void)
 {
 	do
 	{
@@ -1291,23 +1346,3 @@ void do_primitive(char *ss)
 	}
 }
 
-void errorcheck(int err)
-{
-	switch(err)
-	{
-		case 0:
-			return; // No error.
-		case RPARENTMISSING:
-		case SERROR:
-			error("Syntax error in the expression.", NORMAL);
-			break;
-		case UNDEFLABEL:
-			error("Undefined label in the expression.", NORMAL);
-			break;
-		case EXTIDTF:
-			error("External identifier in the expression.", NORMAL);
-			break;
-		default:
-			error("016 Internal error.", INTERNAL);
-	}
-}

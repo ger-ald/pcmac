@@ -11,12 +11,8 @@
 #include "defines.h"
 #include "types.h"
 
-char *split_long(unsigned long p);
-void open_block(int k);
-void close_block(void);
 void external_reference(valtype idtf, int type);
 void gextdef(void);
-void gext_tree(struct symbol *j);
 void flush_rebuff(void);
 void flush_code(void);
 

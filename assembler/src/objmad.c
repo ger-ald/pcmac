@@ -64,7 +64,18 @@
 #define putC( x ) putc( (x) , linkfp)
 #define fill(c)	(linkbuff[linkbuffpos++] = (c))
 
-char *split_long(unsigned long p)
+
+
+static char *split_long(unsigned long p);
+static void open_block(int k);
+static void close_block(void);
+static void gext_tree(struct symbol *j);
+
+
+
+
+
+static char *split_long(unsigned long p)
 {
 	static char k[4];
 	int i;
@@ -80,7 +91,7 @@ char *split_long(unsigned long p)
 /*
  ** Opens a block to write.
  */
-void open_block(int k)
+static void open_block(int k)
 {
 
 	if(linkbuffpos)
@@ -90,7 +101,7 @@ void open_block(int k)
 	linkbloctype = k;
 }
 
-void close_block(void)
+static void close_block(void)
 {
 	int i;
 	int chk;
@@ -110,6 +121,56 @@ void close_block(void)
 	linkbuffpos = 0;
 	linkbloctype = 0;
 }
+
+/* Writes out the external and public symbols to the
+ * object file from the tree j.
+ */
+static void gext_tree(struct symbol *j)
+{
+	int i;
+	char *p;
+
+	if(j == NULL)
+		return;
+	gext_tree(j->small_son);
+	gext_tree(j->big_son);
+	if(j->type_of_the_symbol == EXTERNAL)
+	{
+		open_block( LINKEXTDEF);
+		/* This block always has only one item. */
+		for(i = 0; j->name_of_the_symbol[i]; i++)
+			fill(j->name_of_the_symbol[i]);
+		fill(0);/* Close the name*/
+		p = split_long(j->value_of_the_symbol);
+		fill(p[0]);
+		fill(p[1]);
+		close_block();
+	}
+	else if(j->public)
+	{
+		if(j->type_of_the_symbol == UNDEFINED)
+		{
+			error("Public symbol was not defined.", NORMAL);
+			return;
+		}
+		open_block( LINKPUB);
+		/* This block always has only one item.*/
+		if(j->relocatable)
+			fill(0xf0);
+		else
+			fill(0);
+		for(i = 0; j->name_of_the_symbol[i]; i++)
+			fill(j->name_of_the_symbol[i]);
+		fill(0);/* Close the name*/
+		p = split_long(j->value_of_the_symbol);
+		fill(p[0]);
+		fill(p[1]);
+		fill(p[2]);
+		fill(p[3]);
+		close_block();
+
+	}
+}/* End of the function gext_tree()*/
 
 void external_reference(valtype idtf, int type)
 {
@@ -165,56 +226,6 @@ void gextdef(void)
 	for(i = 0; i < PRIME; i++) /* Go thru the hash table. */
 		gext_tree(hashtable[i]);
 }
-
-/* Writes out the external and public symbols to the
- * object file from the tree j.
- */
-void gext_tree(struct symbol *j)
-{
-	int i;
-	char *p;
-
-	if(j == NULL)
-		return;
-	gext_tree(j->small_son);
-	gext_tree(j->big_son);
-	if(j->type_of_the_symbol == EXTERNAL)
-	{
-		open_block( LINKEXTDEF);
-		/* This block always has only one item. */
-		for(i = 0; j->name_of_the_symbol[i]; i++)
-			fill(j->name_of_the_symbol[i]);
-		fill(0);/* Close the name*/
-		p = split_long(j->value_of_the_symbol);
-		fill(p[0]);
-		fill(p[1]);
-		close_block();
-	}
-	else if(j->public)
-	{
-		if(j->type_of_the_symbol == UNDEFINED)
-		{
-			error("Public symbol was not defined.", NORMAL);
-			return;
-		}
-		open_block( LINKPUB);
-		/* This block always has only one item.*/
-		if(j->relocatable)
-			fill(0xf0);
-		else
-			fill(0);
-		for(i = 0; j->name_of_the_symbol[i]; i++)
-			fill(j->name_of_the_symbol[i]);
-		fill(0);/* Close the name*/
-		p = split_long(j->value_of_the_symbol);
-		fill(p[0]);
-		fill(p[1]);
-		fill(p[2]);
-		fill(p[3]);
-		close_block();
-
-	}
-}/* End of the function gext_tree()*/
 
 void flush_rebuff(void)
 {

@@ -1,0 +1,194 @@
+;*******************************************************
+;*                                                     *
+;*           ============================              *
+;*             pic16f MACRO DEFINITIONS                *
+;*           ============================              *
+;*                for use with the                     *
+;*              PCMAC Macro Assembler                  *
+;*           ============================              *
+;*                                                     *
+;***************************************************************************
+;*
+;*  $Revision: 1.00 $ by Gerald Elzing
+;*
+;*  $Date: 2022/02/13 13:02:34 $
+;*
+;***************************************************************************
+;
+; This file contains only those macros required to support the Microchip
+; pic16fxx Processors.
+;
+; Pic16fxx program memory has 14bit words, represented by 16bit words instead
+; of bytes. Pcmac will however still generate everything based on byte addresses.
+; This means that you will have to adjust labels to represent the word address
+; instead of the byte address and ORG statements the byte address instead of the
+; word address. An example of this is when jumping to an address with the
+; instruction GOTO. Adjusting labels can be done by declaring labels as shown
+; below, or by declaring them as normal and bitshifting the label in the places
+; it is used.
+;
+; Example of an adjusted label definition:
+; ADJUSTED_LABEL	EQU $>>1
+;
+; Example of an adjusted ORG definition:
+; 	ORG 2*0000h
+;
+;***************************************************************************
+;
+; PSEUDO OPS
+; ----------
+; In addition to defining the Instruction Set, this file defines the
+; following pseudo ops or directives:
+;
+; ORG   - defines the start address (origin) for a machine code program block
+;         (e.g. "ORG 7000h" sets the start address to hexadecimal 7000)
+;
+; DSZ   - defines one or more bytes, all preset to zero
+;         (e.g. "DSZ 10" generates a block of 10 bytes, each set to zero)
+;
+; REPT  - defines one or more bytes, all preset to the same user-supplied value
+;         (e.g. "REPT 255 x 3 times" generates 3 bytes, each set to 255)
+;
+; LBC   - defines leading byte-count strings, i.e. first byte holds the length
+;         (e.g. LBC "Hello" generates the six hex bytes "05 48 65 6C 6C 6F")
+;
+;***************************************************************************
+;
+; The pic16f stores 14-bit opcodes in LO-HI order
+; (e.g. dw 1234h stored as 34h, 12h)
+;
+#dw lh
+#dd lh
+
+;
+; Register constants
+;
+
+const	_DST	:=	(W,F)
+
+;
+;Instruction constants
+;
+
+const	_AAA	:=	(RETURN,RETFIE,SLEEP,CLRWDT)
+const	_BBB	:=	(MOVWF,CLRF)
+const	_CCC	:=	(SUBWF,DECF,IORWF,ANDWF,XORWF,ADDWF,MOVF,COMF,INCF,DECFSZ,RRF,RLF,SWAPF,INCFSZ)
+const	_DDD	:=	(BCF,BSF,BTFSC,BTFSS)
+const	_EEE	:=	(CALL,GOTO)
+const	_FFF	:=	(MOVLW,RETLW,IORLW,ANDLW,XORLW,SUBLW,ADDLW)
+
+;***************************************************************************
+;
+; Pseudo op macro definitions
+;
+;***************************************************************************
+
+;------------------------------------------------------------
+; Set program ORIGIN (i.e. start address for the machine code)
+;------------------------------------------------------------
+;the number arg is a byte address (pic16fxx program memory has 14bit words, represented by 16bit instead of bytes)
+macro("ORG\  *",NUMERIC)
+	$ := doreloc(#0)
+endm
+
+;------------------------------------------------------------
+; Define one or more words, preset to zero
+;------------------------------------------------------------
+macro("DSZ\  *",NUMERIC)
+	#ifndef dsz
+		var dsz
+	#endif
+	dsz := #0 << 1
+	#while dsz>0
+		db 0
+		dsz := dsz -1
+	#wend
+endm
+
+;------------------------------------------------------------
+; Define one or more words, preset to same user-supplied value
+;------------------------------------------------------------
+macro("REPT\  *  X  *  TIMES",NUMERIC,NUMERIC)
+	#if #0<-8192 || #0>16383
+		#error "Value to be repeated is not in the range -8192 to 16383 (14bit) !"
+	#else
+		#ifndef rept
+			var rept
+		#endif
+		rept := #1
+		#while rept>0
+			dw #0
+			rept := rept -1
+		#wend
+	#endif
+endm
+
+;------------------------------------------------------------
+; Define a leading word-count packed string, i.e. a string which has
+; its length stored as the first word. and its chars stuffed 2 per
+; word (2 x 7 bit into 14bit, the pic16fxx program memory word size)
+;
+; For example:
+;     LBC "ABC"  generates the bytes  0003h, 2141h and 0043h
+;------------------------------------------------------------
+macro("LBC\  *",STRING)
+	#ifndef len
+		var len
+	#endif
+	#ifndef idx
+		var idx
+	#endif
+	len := strlen(#0)
+	idx := 0
+	dw len
+	#while idx<len
+		dw stridx(idx, #0) | stridx(idx+1, #0) << 7
+		idx := idx +2
+	#wend
+endm
+
+;-------------------------------------------------------------------
+;
+; Standard pic16 instruction set
+; ================================
+
+macro("NOP")
+	dw	0000h
+endm
+
+macro("CLRW")
+	dw	0100h
+endm
+
+macro("*",_AAA);		RETURN RETFIE SLEEP CLRWDT
+	#if #0<2
+		dw	0008h + #0
+	#else
+		dw	0063h + (#0 - 2)
+	#endif
+endm
+
+macro("*\  *",_BBB,NUMERIC);		MOVWF CLRF
+	dw	0080h + (#0<<8) + #1
+endm
+
+macro("*\  *,*",_CCC,NUMERIC,_DST);		SUBWF DECF IORWF ANDWF XORWF ADDWF MOVF COMF INCF DECFSZ RRF RLF SWAPF INCFSZ, W F
+	dw	0200h + (#0<<8) + (#2<<7) + #1
+endm
+
+macro("*\  *,*",_DDD,NUMERIC,NUMERIC);		BCF BSF BTFSC BTFSS
+	dw	1000h + (#0<<10) + (#2<<7) + #1
+endm
+
+;the number arg is a byte address (pic16fxx program memory has 14bit words, represented by 16bit instead of bytes)
+macro("*\  *",_EEE,NUMERIC);		CALL GOTO
+	dw	2000h + (#0<<11) + #1
+endm
+
+macro("*\  *",_FFF,NUMERIC);		MOVLW RETLW IORLW ANDLW XORLW SUBLW ADDLW
+	dw	3000h + (#0<<10) + #1
+endm
+
+;-------------------------------------------------------------------
+;       END of the i8085 Macros for the PCMAC Macro Assembler
+;-------------------------------------------------------------------

@@ -440,22 +440,6 @@ void check_sharps(char *s, int limit)
 }/* End of function check_sharps() */
 
 /*
- **
- ** Changes every occurence of c1 character in s string to be c2
- **
- **
- */
-char *strccchr(char *s, char c1, char c2)
-{
-	int i;
-	for(i = 0; s[i]; i++)
-	{
-		if(s[i] == c1)
-			s[i] = c2;
-	}
-	return s;
-}
-/*
  ** Checks the macro if it is starting with a #
  ** and compresses it.
  **
