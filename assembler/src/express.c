@@ -941,7 +941,7 @@ void getsymbol(void)
 		{
 			for(j = 0; lexemes[i].lexeme[j]; j++)
 				if(lexemes[i].lexeme[j] != first_unused_character[j])
-					break; /* get off the inner loop (while) */
+					break; /* get off the inner loop (for) */
 			/* If we found it. */
 			if(!lexemes[i].lexeme[j])
 				break; /* get off the outer loop (for) */

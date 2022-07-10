@@ -119,9 +119,9 @@ endm
 ; Data Block Storage Allocation
 ;--------------------------------------------------------------
 
-ZERO    DSZ  3                  ; three bytes, each set to zero
-GAP     DS   6                  ; a gap of six undefined bytes
-REPEAT  REPT 128 x 3 times      ; three bytes, each set to 128
+ZERO:   DSZ  3                  ; three bytes, each set to zero
+GAP:    DS   6                  ; a gap of six undefined bytes
+REPEAT: REPT 128 x 3 times      ; three bytes, each set to 128
         DSZ  10o                ; eight bytes, each set to zero
         DS   100B               ; four undefined bytes
         REPT 177o x 10b times   ; two bytes, each set to 127
@@ -135,34 +135,34 @@ REPEAT  REPT 128 x 3 times      ; three bytes, each set to 128
         DB  'A', '2', 'z'       ; can preset using ASCII chars
         DB  'A' - 64, '2' - '0' ; or expressions
 
-BTSIZE  DB ENDBT - BTABLE       ; number of bytes in table
-BTABLE  DB 1, 2, 3, 4, 5        ; five one-byte entries
+BTSIZE: DB ENDBT - BTABLE       ; number of bytes in table
+BTABLE: DB 1, 2, 3, 4, 5        ; five one-byte entries
 ENDBT   EQU $                   ; $ = current location pointer
 
 ;--------------------------------------------------------------
 ; Byte-based data storage (strings)
 ;--------------------------------------------------------------
 
-STR_0   LBC "Hello!"            ; first byte has string length
+STR_0:  LBC "Hello!"            ; first byte has string length
 
         DB 6, "Hello!"          ; equivalent to STR_0 example
 
-STR_1   DB  "Error message",0   ; a null-terminated string
+STR_1:  DB  "Error message",0   ; a null-terminated string
 
-STR_2   DB  "Error message\0"   ; equivalent to STR_1 example
+STR_2:  DB  "Error message\0"   ; equivalent to STR_1 example
 
         ; Strings can include the following control chars
         ; \t = tab, \r = carriage return and \n = line-feed
 
-STR_3   DB  "Hello, world!\r\n"
+STR_3:  DB  "Hello, world!\r\n"
         DB  0                   ; a null terminator for STR_3
 
         ; Strings can also include escape characters to
         ; specify non-ASCII character codes (e.g. \242)
 
-STR_4   LBC "Press \255 key"    ; inserts char with code 255
+STR_4:  LBC "Press \255 key"    ; inserts char with code 255
 
-STR_5   DB 11, "Press ", 255, " key" ; equivalent to STR_4
+STR_5:  DB 11, "Press ", 255, " key" ; equivalent to STR_4
 
 ;--------------------------------------------------------------
 ; Word-based data storage
@@ -174,12 +174,12 @@ STR_5   DB 11, "Press ", 255, " key" ; equivalent to STR_4
 
         DW GAP, REPEAT          ; stores two 16-bit addresses
 
-WTBYTES DB ENDWT - WTABLE       ; number of bytes in table
-WTSIZE  DB +(ENDWT - WTABLE) / 2 ; number of entries in table
-WTABLE  DW STR_0, STR_1, STR_2, STR_3, STR_4 ; five 16-bit entries
+WTBYTES: DB ENDWT - WTABLE       ; number of bytes in table
+WTSIZE: DB +(ENDWT - WTABLE) / 2 ; number of entries in table
+WTABLE: DW STR_0, STR_1, STR_2, STR_3, STR_4 ; five 16-bit entries
 ENDWT   EQU $                   ; $ = current location pointer
 
-DUMMY   TRAP                    ; Should never get here!
+DUMMY:  TRAP                    ; Should never get here!
 
 ;--------------------------------------------------------------
 ; Relative branch instructions

@@ -103,7 +103,7 @@ int check_directive(char *s, char *l)
 }/* End check_directive(). */
 
 /*
- ** Split line.
+ ** Split line. (splits line into label and rest of line. label (aka s) can be null)
  **
  ** Splits the line 'l' into 's' and 't'.
  ** 's' contains the label if was
@@ -114,65 +114,70 @@ void split_the_line(char *l, char *s, char *t)
 {
 	int i, j;
 	i = 0;
-	if(isIDalpha(*l))
-	{/* The line has a label starting */
-		/* on the first character of it. */
-		while(isIDchar(l[i]))
-			i++;
-		j = i; /* j is the length of the label */
-		while(isspace(l[i]))
-			i++; /* Step over the spaces after the label. */
-		if(l[i] == ':')
-			i++; /* A colon can terminate the label.      */
-		if(l[i] == '=')
-			i--; /* If the line assignes value to a variable. */
-		while(isspace(l[i]))
-			i++; /* Step over the spaces after the colon. */
-		if(j)
-			strncpy(s, l, j); /* Copy the label to s. 	   */
-		s[j] = '\0';
-		strcpy(t, &(l[i])); /* Copy the rest of the line to t. */
-		return;
-	}
-	/* If the first character of the line is not IDalpha then :  */
-	while(isspace(l[i]))
+
+	while (isspace(l[i]))
 		i++;/* Step over the spaces being */
-	/* on the start of the line.  */
-	if(isIDalpha(l[i]))
-	{/* The line probably has label. */
+			/* on the start of the line.  */
+	if (isIDalpha(l[i]))
+	{
+		// The line probably has label.
 		l = &(l[i]);/* Cut spaces from the start of the line. */
 		i = 0;
-		while(isIDchar(l[i]))
+		while (isIDchar(l[i]))
 			i++; /* Step over the characters of the label. */
 		j = i; /* j is length of the label. */
-		while(isspace(l[i]))
+		while (isspace(l[i]))
 			i++; /* Step over the spaces following the label. */
-		if(l[i] == ':')
-		{/* The line has a label. */
+		if (l[i] == ':')
+		{
+			// The line probably has a label.
+			//   'blabla: <maybe more line>'
+			//   'blabla := 42' (is also seen as label)
+			
+			/* Throw away the colon. */
 			i++;
-			if(l[i] == '=')
-				i--; /* If it is := then we don't   */
-			/*	throw away the colon. */
-			while(isspace(l[i]))
+			if (l[i] == '=')
+				i--; /* If it is := then we don't */
+
+			while (isspace(l[i]))
 				i++; /* Step over the spaces */
-			/* folloving the colon. */
-			strncpy(s, l, j); /* Copy the label to s. 	   */
+			/* following the colon. (or not if ':=') */
+			strncpy(s, l, j); /* Copy the label to s. */
 			s[j] = '\0';
 			strcpy(t, &(l[i])); /* Copy the rest of the line to t. */
 			return;
 		}
+		else if (((l[i] == 'e') || (l[i] == 'E')) &&
+				((l[i+1] == 'q') || (l[i+1] == 'Q')) &&
+				((l[i+2] == 'u') || (l[i+2] == 'U')) &&
+				isspace(l[i+3]))
+		{
+			// The line probably has a label.
+			//   'blabla equ 42' (is also seen as label)
+
+			// Don't throw away any chars from 'equ'.
+
+			// Spaces have already been skipped.
+
+			strncpy(s, l, j); // Copy the label to s.
+			s[j] = '\0';
+			strcpy(t, &(l[i])); // Copy the rest of the line to t.
+			return;
+		}
 		else
-		{/* The line has no label. */
+		{
+			// The line has no label.
 			*s = '\0';
-			strcpy(t, l); /* Copy the whole line onto t */
-			/*since it has no label.      */
+			strcpy(t, l);	/* Copy the whole line onto t */
+							/* since it has no label.     */
 			return;
 		}
 	}
 	else
-	{/* The line has no label. */
-		strcpy(t, &(l[i]));/* Copy the whole line onto t */
-		/*since it has no label.      */
+	{
+		// The line has no label.
+		strcpy(t, &(l[i]));	/* Copy the whole line onto t */
+							/* since it has no label.     */
 		*s = '\0';
 		return;
 	}
