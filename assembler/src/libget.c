@@ -49,7 +49,7 @@ static void getint(int *a);
  *   |the members of the last set
  *   |the number of the sets that the 1st macro have ':'
  *    the row numbers of the sets separated by ','
- *   |the sintax definition line
+ *   |the syntax definition line
  *   |the number of the executable lines (decimal form)
  *   |the executable lines separated by new lines.
  *
@@ -169,7 +169,7 @@ void read_library(void)
 			if(c != ',')
 				error("Bad macro library file.", FATAL);
 		}/* We filled up the stspointer array. */
-		/* Read the sintax definition. */
+		/* Read the syntax definition. */
 		c = getc(libfile);
 		if(c != '\n')
 			error("Bad macro library file.", FATAL);
@@ -233,7 +233,7 @@ void read_library(void)
 			/* hash function for az empty line is EMPTYHASH.                */
 			maclast[macqueindx]->nextmacro = macroot[EMPTYHASH];
 
-		/* Make a new copy the sintax definition, */
+		/* Make a new copy the syntax definition, */
 		/* We need not compress the name here. */
 		maclast[macqueindx]->sdef = strdup(name);
 		if(!(maclast[macqueindx]->sdef))

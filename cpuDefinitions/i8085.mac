@@ -66,15 +66,20 @@ const	_SAB	:=	(POP,PUSH)
 const	_SAC	:=	(OUT,IN)
 const	_SAD	:=	(SHLD,LHLD,STA,LDA)
 const	_SAE	:=	(RLC,RRC,RAL,RAR,DAA,CMA,STC,CMC)
-
 const	_SAF	:=	(XTHL,XCHG,DI,EI)
+
 const	_SBA	:=	(RET,HLT,PCHL,SPHL)
 const	_SBB	:=	(RIM,SIM)
 const	_SBC	:=	(INR,DCR)
 
 const	_SRET	:=	(R);halves
 const	_SJC	:=	(J,C);halves
-const	_SP	:=	(NZ,Z,NC,C,PO,PE,P,M);other halves
+const	_SP		:=	(NZ,Z,NC,C,PO,PE,P,M);other halves
+
+
+const	_SAG	:=	(LDHI,LDSI)
+const	_SBD	:=	(DSUB,ARHL,RDEL)
+const	_ST		:=	(NK,K)
 
 ;***************************************************************************
 ;
@@ -234,7 +239,7 @@ macro("*",_SBB);			RIM SIM
 	db	20h + (#0<<4)
 endm
 
-macro("*\  *",_SBC,_SS);			INR DCR
+macro("*\  *",_SBC,_SS);			INR DCR, B C D E H L M A
 	db	04h + #0 + (#1<<3)
 endm
 
@@ -246,6 +251,36 @@ macro("*\  *",_SID,_SR);		INX DAD DCX, B D H SP
 	#elsif #0=2
 		db	0Bh + (#1<<4)
 	#endif
+endm
+
+;-------------------------------------------------------------------
+;
+; Undocumented i8085 instruction set
+; ================================
+
+macro("*\  *",_SAG,NUMERIC);		LDHI LDSI
+	db	28h + (#0<<4),#1
+endm
+
+macro("J*\  *",_ST,NUMERIC);	J, NK K
+	db	0DDh + (#0<<5)
+	dw	#1
+endm
+
+macro("*",_SBD);	DSUB ARHL RDEL
+	db	08h + (#0<<3)
+endm
+
+macro("LHLX");
+	db	0EDh
+endm
+
+macro("SHLX");
+	db	0D9h
+endm
+
+macro("RSTV");
+	db	0CBh
 endm
 
 ;-------------------------------------------------------------------

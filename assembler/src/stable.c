@@ -82,17 +82,17 @@ static int hashpjw(char *s)
  **		default: Internal compiler error.
  **		break;
  **		}
- ** So the sintax definition will get the same hash value as the line
+ ** So the syntax definition will get the same hash value as the line
  ** which match it. (This hash value is always case insensitive.)
  */
 int machash(char *s, int k)
 {
 	char *p;
 	unsigned long h = 0, g;
-	int bslashwas; /* When calculating the hash value of a sintax definition. */
+	int bslashwas; /* When calculating the hash value of a syntax definition. */
 	switch(k)
 	{
-		case 1:/* The argument 's' is a line and not sintax definition. */
+		case 1:/* The argument 's' is a line and not syntax definition. */
 			for(p = s; *p != '\0' && !isspace(*p); p++)
 			{
 				/* Push a back slash before every *, \ and " */
@@ -117,7 +117,7 @@ int machash(char *s, int k)
 				}
 			}/* End for */
 			break;
-		case 0:/* The argument 's' is a sintax definition. */
+		case 0:/* The argument 's' is a syntax definition. */
 			bslashwas = 0;
 			for(p = s; *p != '\0' && !isspace(*p) && !(*p == '\\' && isspace(p[1])) && !(*p == '*' && !bslashwas); p +=
 					1)

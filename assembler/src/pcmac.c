@@ -467,13 +467,13 @@ int main(int argc, char **argv, char **env)
 
 /*
  ** Function checkline returns TRUE if the line is
- **  good for the sintax definition: 'sintax_definition'
+ **  good for the syntax definition: 'syntax_definition'
  */
 
-static int checkline(char *line, char *sintax_definition, struct set *sets[], char *member[], int k)
+static int checkline(char *line, char *syntax_definition, struct set *sets[], char *member[], int k)
 {
 	// char *line; Contains the line we want to analize.
-	// char *sintax_definition; Contains the sintax definition.
+	// char *syntax_definition; Contains the syntax definition.
 
 	// struct set *sets[]; Contains pointers.
 
@@ -488,15 +488,15 @@ static int checkline(char *line, char *sintax_definition, struct set *sets[], ch
 	// If k is one then no matter.
 	// int k;
 
-	int sintax_index, line_index, currset, lexlen, line_end_indicator;
+	int syntax_index, line_index, currset, lexlen, line_end_indicator;
 
 	if(!*line)
 		return FALSE; /* An empty line can not match a macro. */
-	sintax_index = line_index = currset = 0;
+	syntax_index = line_index = currset = 0;
 	line_end_indicator = 0;
 	while(line[line_index] && !line_end_indicator)
 	{
-		switch(sintax_definition[sintax_index])
+		switch(syntax_definition[syntax_index])
 		{
 			case '*': /* The star means that is must match a    */
 				/* member of the set given.		       */
@@ -520,7 +520,7 @@ static int checkline(char *line, char *sintax_definition, struct set *sets[], ch
 				while(isspace(line[line_index]))
 					line_index++;
 				break;
-			case '\0':/* If we reached the end of the sintax defintion */
+			case '\0':/* If we reached the end of the syntax defintion */
 				/* but not of the line, then there must be spaces */
 				/* at the end of the line, but nothing else.      */
 				while(isspace(line[line_index]))
@@ -532,12 +532,12 @@ static int checkline(char *line, char *sintax_definition, struct set *sets[], ch
 				/* It means that the next character matches */
 				/* only the same character even if that is  */
 				/* space, star or another backslash.        */
-				sintax_index++;
+				syntax_index++;
 				// no break
 			default: /* If it is not a special character or if   */
 				/* previous  one  was  a '\'  then  this    */
 				/* character matches only the same character*/
-				if(!charcmp((int)sintax_definition[sintax_index], (int)line[line_index]))
+				if(!charcmp((int)syntax_definition[syntax_index], (int)line[line_index]))
 				{
 					/* Free the previously            */
 					/* allocated strings. 		*/
@@ -552,12 +552,12 @@ static int checkline(char *line, char *sintax_definition, struct set *sets[], ch
 				line_index++;
 				break;
 		}/* End of switch. */
-		if(sintax_definition[sintax_index])
-			sintax_index++;
+		if(syntax_definition[syntax_index])
+			syntax_index++;
 	}/* End of while. */
-	while(isspace(sintax_definition[sintax_index]))
-		sintax_index++;
-	if(!sintax_definition[sintax_index] && !line[line_index])
+	while(isspace(syntax_definition[syntax_index]))
+		syntax_index++;
+	if(!syntax_definition[syntax_index] && !line[line_index])
 		return TRUE;
 	else
 	{
@@ -770,7 +770,7 @@ struct macro *ismacro(char *s, char ***setcc, int k)
 	if(!*s)/* Empty line can not match any macro. */
 		return NULL;
 	/* Calculate the hash value of the line. */
-	/* 1 == it is not a sintax definition, but a line. */
+	/* 1 == it is not a syntax definition, but a line. */
 	macqueindx = machash(s, 1);
 	ptr = macroot[macqueindx];
 	while(ptr)
@@ -786,7 +786,7 @@ struct macro *ismacro(char *s, char ***setcc, int k)
 		}
 		else
 			*setcc = NULL;
-		/* If the sintax definition, and the set definitions are good for */
+		/* If the syntax definition, and the set definitions are good for */
 		/* this line then we found it being a macro.                      */
 		if(checkline(s, ptr->sdef, ptr->setpointer, *setcc, k))
 			break;
@@ -825,12 +825,12 @@ int macrodef(void)
 	else
 		first_unused_character++;/* Step over the ( */
 	SPACEAT;/* Eat the spaces between the ( and the ". */
-	if(*first_unused_character != '\"')/* The sintax string must follow */
+	if(*first_unused_character != '\"')/* The syntax string must follow */
 		error("\" missing in the macro definition.", NORMAL);
 	else
 		first_unused_character++;/* Step over the double quote */
 	i = // Index for the char array 'name'
-	setnr = 0;// The numbers of the set stars in the sintax string.
+	setnr = 0;// The numbers of the set stars in the syntax string.
 
 	/* While not end of line and not end of the string. */
 	while( ((*first_unused_character) != '\"')&&(*first_unused_character) )
@@ -854,13 +854,13 @@ int macrodef(void)
 		error("\" missing after the macro definition.", NORMAL);
 	else
 		first_unused_character++; /* Step over the " */
-	/* Terminate the sintax string with zero character. */
+	/* Terminate the syntax string with zero character. */
 	name[i++] = '\0';
-	/* Now we have the sintax string in the character array 'name' */
+	/* Now we have the syntax string in the character array 'name' */
 
-	SPACEAT;/* Step over the spaces after the sintax definition string. */
-	/* Calculate the hash value of the sintax definition. */
-	/* 0 == it is a sintax definition. */
+	SPACEAT;/* Step over the spaces after the syntax definition string. */
+	/* Calculate the hash value of the syntax definition. */
+	/* 0 == it is a syntax definition. */
 	macqueindx = machash(name, 0);
 	if(maclast[macqueindx] == NULL)
 	{
@@ -910,7 +910,7 @@ int macrodef(void)
 		/* hash function for az empty line is EMPTYHASH.                */
 		maclast[macqueindx]->nextmacro = macroot[EMPTYHASH];
 
-	/* Make a new copy the sintax definition, */
+	/* Make a new copy the syntax definition, */
 	maclast[macqueindx]->sdef = strdup((char *)compress(name));
 	if(!(maclast[macqueindx]->sdef))
 		error("End of memory!", FATAL);
