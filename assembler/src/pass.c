@@ -183,7 +183,7 @@ void dopas(void)
 				if(err == UNDEFLABEL && pass == 1)
 					error("Expression must be predefined.", NORMAL);
 				else
-					error("Sintax error in the expression.", NORMAL);
+					error("Syntax error in the expression.", NORMAL);
 			}
 			ptr->relocatable = reloc;
 			ptr->value_of_the_symbol = value_of_the_expression;
@@ -211,7 +211,7 @@ void dopas(void)
 				if(err == UNDEFLABEL && pass == 1)
 					error("Expression must be predefined.", NORMAL);
 				else
-					error("Sintax error in the expression.", NORMAL);
+					error("Syntax error in the expression.", NORMAL);
 			}
 			ptr->relocatable = reloc;
 			if(pass == 1)

@@ -453,10 +453,10 @@ char *compress(char *s)
 		s++;
 	if(!*s)
 	{
-		error("Empty sintax definition!", NORMAL);
+		error("Empty syntax definition!", NORMAL);
 		return s;
 	}
-	/* If the sintax definition starts with a forced space,
+	/* If the syntax definition starts with a forced space,
 	 then no any line can fit it, because the space before the
 	 mnemonic separates the label and the mnemonic.
 	 In other words: a mnemonic can not start with a space.
@@ -464,7 +464,7 @@ char *compress(char *s)
 	 then that is a directive.
 	 */
 	if((s[0] == '\\' && isspace(s[1])) || *s == '#')
-		error("Unmatchable sintax definition.", NORMAL);
+		error("Unmatchable syntax definition.", NORMAL);
 	for(i = 0; s[i]; i++)
 		if(isspace(s[i]))
 			s[i] = ' ';

@@ -93,7 +93,7 @@ extern struct loopstack *loopstacklast;
  The previous of mslast->mlin. */
 extern struct exeline *cmline;
 /* A dummy variable for error handling, when
- in a macro sintax definition there are more *
+ in a macro syntax definition there are more *
  referring to a set then set name following the
  strin. */
 extern struct symbol *dummy_set;

@@ -83,7 +83,7 @@ struct loopstack *loopstacklast;
  The previous of mslast->mlin. */
 struct exeline *cmline;
 /* A dummy variable for error handling, when
- in a macro sintax definition there are more *
+ in a macro syntax definition there are more *
  referring to a set then set name following the
  strin. */
 struct symbol *dummy_set;
