@@ -8,64 +8,64 @@
 /*
  ** TOKENS
  */
-#define ORSYMBOL		1 // '||'
-#define ANDSYMBOL		2 // '&&'
-#define SHRSYMBOL		3
-#define SHLSYMBOL		4
-#define MODSYMBOL		5
-#define EQSYMBOL		6
-#define IDENTIFIER		7
-#define NOTSYMBOL		8
-#define NEGSYMBOL		9
-#define MINUSSYMBOL		10
-#define PLUSSYMBOL		11
-#define BANDSYMBOL		12 // '&'
-#define BORSYMBOL		13 // '|'
-#define BXORSYMBOL		14
-#define MULTSYMBOL		15 // '*'
-#define ADDSYMBOL		16 // '+'
-#define GTSYMBOL		17 // '>'
-#define GESYMBOL		18 // '>='
-#define LTSYMBOL 		19 // '<'
-#define LESYMBOL 		20 // '<='
-#define NESYMBOL		21 // '!='
-#define DIVSYMBOL		22 // '/'
-#define LPARENT			23 // '('
-#define RPARENT			24 // ')'
-#define LBRA			25 // '['
-#define RBRA			26 // ']'
-#define NUMBER			27
-#define UNKNOWN			28
-#define UNDEFINED		29
-#define UNDEFLABEL		30
-#define SERROR			31 // Syntax error
-#define RPARENTMISSING	32
-#define POP				33
-#define PUSH			34
-#define	PUBLIC			35
-#define EXTERNAL		36
-#define DEFEXTR			37
-#define DEFWORD			38
-#define DEFBYTE			39
-#define ENDMACRO		40
-#define VARSYMBOL		41
-#define DEFSET			42
-#define DEFMACRO		43
-#define ASSIGN			44
-#define DORELOCFUN		45
-#define DOURELOCFUN		46
-#define ISRELOCFUN		47
-#define DEFFUN			48
-#define STRLENFUN		49
-#define COMMA			50
-#define DEFDWORD		51
-#define SHARP			52
-#define TOS				53
-#define EXTIDTF			54
-#define DEFRBYTE		55
-#define DEFRWORD		56
-#define DEFRDWORD		57
-#define STRIDXFUN		58
+#define ORSYMBOL         1 // '||'
+#define ANDSYMBOL        2 // '&&'
+#define SHRSYMBOL        3 // '>>'
+#define SHLSYMBOL        4 // '<<'
+#define MODSYMBOL        5 // '%'
+#define EQSYMBOL         6 // '==', '='
+#define IDENTIFIER       7 // var, define (label)
+#define NOTSYMBOL        8 // '!'
+#define NEGSYMBOL        9 // '~'
+#define MINUSSYMBOL     10 // '-'
+#define PLUSSYMBOL      11 // '+' <unused>
+#define BANDSYMBOL      12 // '&'
+#define BORSYMBOL       13 // '|'
+#define BXORSYMBOL      14 // '^'
+#define MULTSYMBOL      15 // '*'
+#define ADDSYMBOL       16 // '+'
+#define GTSYMBOL        17 // '>'
+#define GESYMBOL        18 // '>='
+#define LTSYMBOL        19 // '<'
+#define LESYMBOL        20 // '<='
+#define NESYMBOL        21 // '<>'
+#define DIVSYMBOL       22 // '/'
+#define LPARENT         23 // '('
+#define RPARENT         24 // ')'
+#define LBRA            25 // '['
+#define RBRA            26 // ']'
+#define NUMBER          27
+#define UNKNOWN         28
+#define UNDEFINED       29
+#define UNDEFLABEL      30
+#define SERROR          31 // Syntax error
+#define RPARENTMISSING  32
+#define POP             33
+#define PUSH            34
+#define PUBLIC          35
+#define EXTERNAL        36
+#define DEFEXTR         37
+#define DEFWORD         38
+#define DEFBYTE         39
+#define ENDMACRO        40
+#define VARSYMBOL       41
+#define DEFSET          42
+#define DEFMACRO        43
+#define ASSIGN          44 // ':='
+#define DORELOCFUN      45
+#define DOURELOCFUN     46
+#define ISRELOCFUN      47
+#define DEFFUN          48
+#define STRLENFUN       49
+#define COMMA           50
+#define DEFDWORD        51
+#define SHARP           52
+#define TOS             53
+#define EXTIDTF         54
+#define DEFRBYTE        55
+#define DEFRWORD        56
+#define DEFRDWORD       57
+#define STRIDXFUN       58
 
 #define DOLLAR				"$"
 #define SETMEMBERSEPARATOR	'\n'
@@ -85,11 +85,11 @@
 #endif
 
 /* Types of the sets. */
-#define NUMERICSET		0
-#define STRINGSET		1
-#define STRING			2
-#define LABELSET		3
-#define DUMMY_SET		4
+#define NUMERICSET   0
+#define STRINGSET    1
+#define STRING       2
+#define LABELSET     3
+#define DUMMY_SET    4
 
 /* Type of errors. */
 #define NORMAL			0

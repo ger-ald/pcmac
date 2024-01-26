@@ -25,9 +25,6 @@ extern int symbol;
 extern int errortype;
 /* Type of the expression. */
 extern int reloctype;
-/* It switches the evaluating of the
- expression for the short circuit boolean. */
-extern int evalswitch;
 /* The lexical analizer passes a numeric value. */
 extern valtype number;
 /* The lexical analyzer passes the

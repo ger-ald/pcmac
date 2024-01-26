@@ -105,7 +105,6 @@ int expression( s , val , err , reloc )
 		return (first_unused_character - s);
 	}
 	getsymbol();
-	evalswitch = 1; // Turn evaluating switch ON.
 	_expression(val);
 	*err = errortype;
 	// The default value of an errorful expression is zero.(FALSE)
@@ -117,50 +116,30 @@ int expression( s , val , err , reloc )
 
 static void _expression(valtype *val)
 {
-	int saveeval;
 	valtype value;
-	saveeval = evalswitch;
 	value = orexpression();
 	while(symbol == ORSYMBOL)
 	{
 		getsymbol();
-		if(value)
-		{
-			evalswitch = 0;
-			orexpression();
-		}
-		else
-		{
-			value = orexpression();
-		}
+		//func before '||' or it won't be called
+		value = orexpression() || value;
 		reloctype = FALSE;
 	}
-	evalswitch = saveeval;
 	*val = value;
 }/* End of _expression() */
 
 //or
 static valtype orexpression(void)
 {
-	int saveeval;
 	valtype value;
-	saveeval = evalswitch;
 	value = andexpression();
 	while(symbol == ANDSYMBOL)
 	{
 		getsymbol();
-		if(!value)
-		{
-			evalswitch = 0;
-			andexpression();
-		}
-		else
-		{
-			value = andexpression();
-		}
+		//func before '&&' or it won't be called
+		value = andexpression() && value;
 		reloctype = FALSE;
 	}
-	evalswitch = saveeval;
 	return value;
 }/* End of orexpression() */
 
@@ -401,9 +380,9 @@ static valtype tag(void)
 			break;
 		case IDENTIFIER:
 			ptr = search_in_the_table(name);
-			if(ptr->type_of_the_symbol == UNDEFINED && evalswitch)
+			if(ptr->type_of_the_symbol == UNDEFINED && (pass != 1))
 				errortype = UNDEFLABEL;
-			if(ptr->type_of_the_symbol == EXTERNAL && evalswitch)
+			if(ptr->type_of_the_symbol == EXTERNAL && (pass != 1))
 				errortype = EXTIDTF;
 			value = ptr->value_of_the_symbol;
 			reloctype = ptr->relocatable;
@@ -1036,11 +1015,13 @@ void getsymbol(void)
 			first_unused_character++;
 		}
 		name[j] = '\0';
+
 		postfix = *first_unused_character;
 		if(postfix == 'H' || postfix == 'h' || postfix == 'O' || postfix == 'o')
-			first_unused_character++;
+			first_unused_character++;//'h' and 'o' (because isxdigit() stopped counting it as number)
 		else
-			postfix = *(first_unused_character - 1);
+			postfix = *(first_unused_character - 1);//'b' and 'd' (because isxdigit() added them to the number)
+
 		number = 0;
 		switch(postfix)
 		{
@@ -1056,13 +1037,13 @@ void getsymbol(void)
 				return;
 			case 'b':
 			case 'B':
-				name[j - 1] = '\0';
+				name[j - 1] = '\0';//because isxdigit() added 'b' to the number
 				for(j = 0; name[j]; j++)
 					number = 2 * number + bin(name[j]);
 				return;
 			case 'd':
 			case 'D': /* Decimal number. */
-				name[j - 1] = '\0';
+				name[j - 1] = '\0';//because isxdigit() added 'd' to the number
 				// no break
 			default: /* Decimal number without postfix. */
 				for(j = 0; name[j]; j++)

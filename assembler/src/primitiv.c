@@ -978,8 +978,7 @@ static void func_def_byte(void)
 			if(objgen)
 				external_reference(symptr->value_of_the_symbol, DEFBYTE);
 			else
-				error("Referencing external(w) while no -o option.",
-				NORMAL);
+				error("Referencing external(w) while no -o option.", NORMAL);
 			generate_byte(0);
 			getsymbol();
 		}
@@ -1167,8 +1166,7 @@ void do_primitive(char *ss)
 						if(objgen)
 							external_reference(symptr->value_of_the_symbol, DEFRBYTE);
 						else
-							error("Referencing external(w) while no -o option.",
-							NORMAL);
+							error("Referencing external(w) while no -o option.", NORMAL);
 						generate_byte(0);
 						getsymbol();
 					}
@@ -1193,8 +1191,7 @@ void do_primitive(char *ss)
 					}
 				} while(symbol == COMMA);
 				if(symbol != UNKNOWN)
-					error("Unexpected characters on the end of the line.",
-					NORMAL);
+					error("Unexpected characters on the end of the line.", NORMAL);
 				break;
 			case DEFRWORD:
 				do
@@ -1208,8 +1205,7 @@ void do_primitive(char *ss)
 						if(objgen)
 							external_reference(symptr->value_of_the_symbol, DEFRWORD);
 						else
-							error("Referencing external(w) while no -o option.",
-							NORMAL);
+							error("Referencing external(w) while no -o option.", NORMAL);
 						generate_word(0);
 						getsymbol();
 					}
@@ -1246,8 +1242,7 @@ void do_primitive(char *ss)
 						if(objgen)
 							external_reference(symptr->value_of_the_symbol, DEFWORD);
 						else
-							error("Referencing external(w) while no -o option.",
-							NORMAL);
+							error("Referencing external(w) while no -o option.", NORMAL);
 						generate_word(0);
 						getsymbol();
 					}
@@ -1281,8 +1276,7 @@ void do_primitive(char *ss)
 						if(objgen)
 							external_reference(symptr->value_of_the_symbol, DEFRDWORD);
 						else
-							error("Referencing external(d) while no -o option.",
-							NORMAL);
+							error("Referencing external(d) while no -o option.", NORMAL);
 						generate_dword(0);
 						getsymbol();
 					}
@@ -1317,8 +1311,7 @@ void do_primitive(char *ss)
 						if(objgen)
 							external_reference(symptr->value_of_the_symbol, DEFDWORD);
 						else
-							error("Referencing external(d) while no -o option.",
-							NORMAL);
+							error("Referencing external(d) while no -o option.", NORMAL);
 						generate_dword(0);
 						getsymbol();
 					}

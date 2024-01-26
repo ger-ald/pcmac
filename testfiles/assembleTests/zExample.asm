@@ -11,12 +11,6 @@ $       :=      doreloc($+#0)
 #endif
 endm
 
-	;the next statement should result in one 0x0A byte
-	db (5+5)
-
-	;the next statement should result in one 0x32 byte
-	db stridx(2,"0123")
-
 ; *************************************************************
 ; PROGRAM NAME: EXAMPLE
 ;
@@ -115,6 +109,18 @@ endm
 
         RTS                     ; just in case this "program"
                                 ; is actually executed!
+
+	; keep output bin clean (pcmac reuses buffers and "DS <n>"
+	; leaves buffer indexes unassigned)
+	DSZ 0ADh
+	$ := ($ - 0ADh)
+
+	;the next statement should result in one 0x0A byte
+	db (5+5)
+
+	;the next statement should result in one 0x32 byte
+	db stridx(2,"0123")
+
 ;--------------------------------------------------------------
 ; Data Block Storage Allocation
 ;--------------------------------------------------------------

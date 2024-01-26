@@ -160,7 +160,7 @@ void dopas(void)
 		{
 			if(!*label)
 			{
-				error("No variable whom assing the value to.", NORMAL);
+				error("No variable whom passing the value to.", NORMAL);
 				strcpy(label, "__DUMMY__");
 				ptr = search_in_the_table(label);
 				ptr->type_of_the_symbol = VARIABLE;

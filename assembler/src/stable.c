@@ -156,7 +156,6 @@ struct symbol *search_in_the_table(char *s)
 	while(*work_pointer && (k = strcmp(s, (*work_pointer)->name_of_the_symbol)))
 	{
 		work_pointer = k > 0 ? &((*work_pointer)->big_son) : &((*work_pointer)->small_son);
-
 	}
 	if(*work_pointer)
 		return *work_pointer;

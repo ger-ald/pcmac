@@ -7,7 +7,7 @@
  ============================================================================
  */
 
-#define PCMAC_VERSION	"1.2.1"
+#define PCMAC_VERSION	"1.2.2"
 
 #include <stdio.h>
 #include <stdlib.h>

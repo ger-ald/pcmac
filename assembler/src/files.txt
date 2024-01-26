@@ -165,7 +165,7 @@ EXTDEF
 EXTREF
 	The external references start with a byte containing the number of the items.
 	After this byte there are the items. Every item contains a two-byte reference
-	number one byte reference type and four bytes address. The one byte reference
+	number, one byte reference type and four bytes address. The one byte reference
 	type can be:
 	1	BYTE
 		The address points to a byte that has to be filled up by the linker.

@@ -47,7 +47,7 @@ static void init_symbol_table(void)
 		maclast[i] = NULL;
 	}
 
-	/* Fill into the table the predefinit symbols! */
+	/* Fill into the table the predefined symbols! */
 	ptr = search_in_the_table("STRING");
 	if(ptr->type_of_the_symbol != UNDEFINED)
 		error("001 internal error!", INTERNAL);
@@ -105,7 +105,7 @@ static void init_symbol_table(void)
 	ptr->stpointer->members = NULL;
 	dummy_set = ptr;
 
-	ptr = search_in_the_table( DOLLAR);
+	ptr = search_in_the_table(DOLLAR);
 	if(ptr->type_of_the_symbol != UNDEFINED)
 		error("007 internal error!", INTERNAL);
 	ptr->type_of_the_symbol = VARIABLE;
@@ -150,7 +150,6 @@ static void init_symbol_table(void)
 	ptr->type_of_the_symbol = VARIABLE;
 	ptr->value_of_the_symbol = 0;
 	ptr->relocatable = FALSE;
-
 }
 
 static void init_file_system(void)
