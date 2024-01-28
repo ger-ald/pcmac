@@ -107,6 +107,7 @@ void flusherr(void)
 			fprintf(listfile, "%s\n", erroot->errmes);
 		ptr = erroot;
 		erroot = erroot->nexterr;
+		free(ptr->errmes);
 		free(ptr);
 	}
 }

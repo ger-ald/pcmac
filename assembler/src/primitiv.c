@@ -1227,8 +1227,7 @@ void do_primitive(char *ss)
 					}
 				} while(symbol == COMMA);
 				if(symbol != UNKNOWN)
-					error("Unexpected characters on the end of the line.",
-					NORMAL);
+					error("Unexpected characters on the end of the line.", NORMAL);
 				break;
 			case DEFWORD:
 				do

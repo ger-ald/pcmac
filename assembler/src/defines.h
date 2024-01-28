@@ -55,7 +55,7 @@
 #define DORELOCFUN      45
 #define DOURELOCFUN     46
 #define ISRELOCFUN      47
-#define DEFFUN          48
+#define ISDEFFUN        48
 #define STRLENFUN       49
 #define COMMA           50
 #define DEFDWORD        51

@@ -454,7 +454,7 @@ static valtype tag(void)
 			value = !!reloctype;
 			reloctype = FALSE;
 			break;
-		case DEFFUN:
+		case ISDEFFUN:
 			getsymbol();
 			if(symbol != LPARENT)
 				errortype = SERROR;
@@ -474,6 +474,8 @@ static valtype tag(void)
 			}
 			if(symbol != RPARENT)
 				errortype = SERROR;
+			else
+				getsymbol();
 			reloctype = FALSE;
 			break;
 		case STRLENFUN:
@@ -791,7 +793,7 @@ void getsymbol(void)
 					{"RB", DEFRBYTE},	{"RD", DEFRDWORD},	{"RW", DEFRWORD}, {"W", DEFWORD}, {NULL, 0}},
 
 	E_reswords[] = {{"NDM", ENDMACRO},	{"XTRN", EXTERNAL},	{"XTERN", EXTERNAL},	{NULL, 0}},
-	I_reswords[] = {{"SDEF", DEFFUN},	{"SRELOC", ISRELOCFUN}, {NULL, 0}},
+	I_reswords[] = {{"SDEF", ISDEFFUN},	{"SRELOC", ISRELOCFUN}, {NULL, 0}},
 	M_reswords[] = {{"ACRO", DEFMACRO},	{"OD", MODSYMBOL},	{NULL, 0}},
 	N_reswords[] = {{"OT", NOTSYMBOL},	{NULL, 0}},
 	O_reswords[] = {{"R", ORSYMBOL},	{NULL, 0}},
